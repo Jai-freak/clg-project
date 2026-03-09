@@ -1,0 +1,4157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThreatPulse — Threat Intelligence Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+         :root {
+            --bg-void: #030508;
+            --bg-deep: #070c12;
+            --bg-panel: #0b1118;
+            --bg-card: #0f1720;
+            --bg-hover: #141f2a;
+            --bg-input: #0d1822;
+            --border: #1a2d3f;
+            --border-bright: #1e3a52;
+            --accent-cyan: #00d4ff;
+            --accent-cyan-dim: #00d4ff33;
+            --accent-red: #ff3b4e;
+            --accent-red-dim: #ff3b4e22;
+            --accent-orange: #ff7c2a;
+            --accent-orange-dim: #ff7c2a22;
+            --accent-yellow: #ffd666;
+            --accent-yellow-dim: #ffd66622;
+            --accent-green: #00ff88;
+            --accent-green-dim: #00ff8822;
+            --accent-purple: #9b5de5;
+            --text-primary: #e8f4fc;
+            --text-secondary: #7a9bb5;
+            --text-muted: #3d5c72;
+            --text-dim: #1e3347;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-display: 'Syne', sans-serif;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-mono);
+            background: var(--bg-void);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        /* ═══════════════════════════════════════
+     SCROLLBAR
+  ═══════════════════════════════════════ */
+        
+         ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        
+         ::-webkit-scrollbar-track {
+            background: var(--bg-deep);
+        }
+        
+         ::-webkit-scrollbar-thumb {
+            background: var(--border-bright);
+            border-radius: 2px;
+        }
+        
+         ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-cyan);
+        }
+        /* ═══════════════════════════════════════
+     PAGE SYSTEM
+  ═══════════════════════════════════════ */
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: flex;
+        }
+        /* ═══════════════════════════════════════
+     LOGIN PAGE
+  ═══════════════════════════════════════ */
+        
+        #login-page {
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-void);
+            position: relative;
+            flex-direction: column;
+        }
+        
+        .login-grid-bg {
+            position: fixed;
+            inset: 0;
+            background-image: linear-gradient(rgba(0, 212, 255, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.04) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .login-glow {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .login-scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+            animation: scanDown 4s linear infinite;
+            z-index: 1;
+            opacity: 0.6;
+        }
+        
+        @keyframes scanDown {
+            0% {
+                top: 0;
+            }
+            100% {
+                top: 100vh;
+            }
+        }
+        
+        .login-container {
+            position: relative;
+            z-index: 2;
+            width: 420px;
+            padding: 40px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-bright);
+            border-top: 2px solid var(--accent-cyan);
+            box-shadow: 0 0 60px rgba(0, 212, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+        
+        .login-logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .login-logo .logo-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 0 20px var(--accent-cyan));
+        }
+        
+        .login-logo h1 {
+            font-family: var(--font-display);
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent-cyan);
+            letter-spacing: centre;
+            text-transform: uppercase;
+        }
+        
+        .login-logo p {
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 3px;
+            margin-top: 4px;
+        }
+        
+        .login-alert {
+            padding: 10px 14px;
+            background: var(--accent-red-dim);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+            font-size: 11px;
+            margin-bottom: 20px;
+            display: none;
+            letter-spacing: 0.5px;
+        }
+        
+        .login-alert.show {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 12px 14px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 1px var(--accent-cyan-dim), inset 0 0 10px rgba(0, 212, 255, 0.03);
+        }
+        
+        .form-group select option {
+            background: var(--bg-panel);
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: var(--accent-cyan);
+            color: var(--bg-void);
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .btn-primary:hover {
+            background: #fff;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+        }
+        
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-ghost:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+        
+        .btn-danger {
+            background: var(--accent-red-dim);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+        
+        .btn-danger:hover {
+            background: var(--accent-red);
+            color: white;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 10px;
+        }
+        
+        .btn-xs {
+            padding: 4px 8px;
+            font-size: 9px;
+            letter-spacing: 1px;
+        }
+        
+        .login-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        
+        .login-footer a {
+            color: var(--accent-cyan);
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .login-demo-creds {
+            position: relative;
+            z-index: 2;
+            margin-top: 16px;
+            padding: 14px 20px;
+            background: rgba(0, 212, 255, 0.04);
+            border: 1px solid rgba(0, 212, 255, 0.15);
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            width: 420px;
+            text-align: center;
+        }
+        
+        .login-demo-creds span {
+            color: var(--accent-cyan);
+        }
+        /* ═══════════════════════════════════════
+     APP LAYOUT
+  ═══════════════════════════════════════ */
+        
+        #app-page {
+            min-height: 100vh;
+            flex-direction: row;
+        }
+        /* SIDEBAR */
+        
+        .sidebar {
+            width: 220px;
+            min-height: 100vh;
+            background: var(--bg-deep);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar-logo {
+            padding: 20px 20px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .sidebar-logo .brand {
+            font-family: var(--font-display);
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--accent-cyan);
+            letter-spacing: 3px;
+        }
+        
+        .sidebar-logo .brand-sub {
+            font-size: 9px;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            display: block;
+            margin-top: 2px;
+        }
+        
+        .sidebar-section {
+            padding: 16px 12px 8px;
+        }
+        
+        .sidebar-section-label {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            padding: 0 8px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 10px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 0.15s;
+            letter-spacing: 0.5px;
+            margin-bottom: 1px;
+            border-left: 2px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+        
+        .nav-item.active {
+            background: var(--accent-cyan-dim);
+            color: var(--accent-cyan);
+            border-left-color: var(--accent-cyan);
+        }
+        
+        .nav-item .nav-icon {
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .nav-badge {
+            margin-left: auto;
+            background: var(--accent-red);
+            color: white;
+            font-size: 8px;
+            padding: 1px 5px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+        
+        .sidebar-bottom {
+            margin-top: auto;
+            padding: 12px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: background 0.15s;
+        }
+        
+        .sidebar-user:hover {
+            background: var(--bg-hover);
+        }
+        
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .avatar-cyan {
+            background: var(--accent-cyan-dim);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+        }
+        
+        .avatar-purple {
+            background: rgba(155, 93, 229, 0.2);
+            color: var(--accent-purple);
+            border: 1px solid var(--accent-purple);
+        }
+        
+        .avatar-orange {
+            background: var(--accent-orange-dim);
+            color: var(--accent-orange);
+            border: 1px solid var(--accent-orange);
+        }
+        
+        .sidebar-user-info {
+            overflow: hidden;
+        }
+        
+        .sidebar-user-name {
+            font-size: 11px;
+            color: var(--text-primary);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .sidebar-user-role {
+            font-size: 9px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+        /* MAIN */
+        
+        .main-content {
+            flex: 1;
+            min-height: 100vh;
+            overflow-y: auto;
+            background: var(--bg-void);
+        }
+        /* TOP BAR */
+        
+        .topbar {
+            height: 52px;
+            background: var(--bg-deep);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .topbar-title {
+            font-family: var(--font-display);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 1px;
+        }
+        
+        .topbar-search {
+            flex: 1;
+            max-width: 360px;
+            position: relative;
+        }
+        
+        .topbar-search input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 7px 14px 7px 34px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            outline: none;
+        }
+        
+        .topbar-search input:focus {
+            border-color: var(--accent-cyan);
+        }
+        
+        .topbar-search input::placeholder {
+            color: var(--text-dim);
+        }
+        
+        .topbar-search .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 12px;
+            pointer-events: none;
+        }
+        
+        .topbar-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            box-shadow: 0 0 6px var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+        
+        .topbar-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+        
+        .topbar-notif {
+            position: relative;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--text-secondary);
+            padding: 4px;
+        }
+        
+        .topbar-notif:hover {
+            color: var(--accent-cyan);
+        }
+        
+        .notif-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 14px;
+            height: 14px;
+            background: var(--accent-red);
+            border-radius: 50%;
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        /* ═══════════════════════════════════════
+     CONTENT VIEWS
+  ═══════════════════════════════════════ */
+        
+        .view {
+            display: none;
+            padding: 24px;
+        }
+        
+        .view.active {
+            display: block;
+        }
+        /* ═══════════════════════════════════════
+     DASHBOARD
+  ═══════════════════════════════════════ */
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .section-title span {
+            color: var(--accent-cyan);
+        }
+        
+        .section-subtitle {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            letter-spacing: 0.5px;
+        }
+        /* STAT CARDS */
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+        }
+        
+        .stat-card.danger::before {
+            background: var(--accent-red);
+        }
+        
+        .stat-card.warning::before {
+            background: var(--accent-orange);
+        }
+        
+        .stat-card.info::before {
+            background: var(--accent-cyan);
+        }
+        
+        .stat-card.success::before {
+            background: var(--accent-green);
+        }
+        
+        .stat-card:hover {
+            border-color: var(--border-bright);
+        }
+        
+        .stat-label {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-family: var(--font-display);
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        
+        .stat-card.danger .stat-value {
+            color: var(--accent-red);
+        }
+        
+        .stat-card.warning .stat-value {
+            color: var(--accent-orange);
+        }
+        
+        .stat-card.info .stat-value {
+            color: var(--accent-cyan);
+        }
+        
+        .stat-card.success .stat-value {
+            color: var(--accent-green);
+        }
+        
+        .stat-change {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        
+        .stat-change.up {
+            color: var(--accent-red);
+        }
+        
+        .stat-change.down {
+            color: var(--accent-green);
+        }
+        
+        .stat-icon {
+            position: absolute;
+            right: 16px;
+            top: 16px;
+            font-size: 28px;
+            opacity: 0.12;
+        }
+        /* GRID LAYOUTS */
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .grid-1-2 {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .grid-2-1 {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        /* PANEL */
+        
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .panel-title {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+        
+        .panel-body {
+            padding: 16px 18px;
+        }
+        /* THREAT TABLE */
+        
+        .threat-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .threat-table th {
+            text-align: left;
+            padding: 8px 12px;
+            font-size: 9px;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-deep);
+            font-weight: 600;
+        }
+        
+        .threat-table td {
+            padding: 10px 12px;
+            font-size: 11px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+            vertical-align: middle;
+        }
+        
+        .threat-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .threat-table tr:hover td {
+            background: var(--bg-hover);
+        }
+        /* SEVERITY BADGES */
+        
+        .badge {
+            padding: 2px 8px;
+            font-size: 9px;
+            letter-spacing: 1px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-radius: 1px;
+            display: inline-block;
+        }
+        
+        .badge-critical {
+            background: rgba(255, 59, 78, 0.2);
+            color: var(--accent-red);
+            border: 1px solid rgba(255, 59, 78, 0.4);
+        }
+        
+        .badge-high {
+            background: rgba(255, 124, 42, 0.2);
+            color: var(--accent-orange);
+            border: 1px solid rgba(255, 124, 42, 0.4);
+        }
+        
+        .badge-medium {
+            background: rgba(255, 214, 102, 0.15);
+            color: var(--accent-yellow);
+            border: 1px solid rgba(255, 214, 102, 0.3);
+        }
+        
+        .badge-low {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(0, 255, 136, 0.25);
+        }
+        
+        .badge-info {
+            background: var(--accent-cyan-dim);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+        
+        .badge-new {
+            background: rgba(155, 93, 229, 0.2);
+            color: var(--accent-purple);
+            border: 1px solid rgba(155, 93, 229, 0.4);
+        }
+        /* IOC ITEMS */
+        
+        .ioc-item {
+            padding: 9px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 11px;
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+        
+        .ioc-item:last-child {
+            border-bottom: none;
+        }
+        
+        .ioc-item:hover {
+            background: var(--bg-hover);
+        }
+        
+        .ioc-type {
+            font-size: 9px;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            width: 50px;
+            flex-shrink: 0;
+        }
+        
+        .ioc-value {
+            font-size: 11px;
+            color: var(--accent-cyan);
+            font-weight: 500;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .ioc-confidence {
+            font-size: 10px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        /* FEED STATUS */
+        
+        .feed-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+            transition: background 0.15s;
+        }
+        
+        .feed-item:last-child {
+            border-bottom: none;
+        }
+        
+        .feed-item:hover {
+            background: var(--bg-hover);
+        }
+        
+        .feed-status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .feed-status-dot.online {
+            background: var(--accent-green);
+            box-shadow: 0 0 6px var(--accent-green);
+        }
+        
+        .feed-status-dot.degraded {
+            background: var(--accent-yellow);
+            box-shadow: 0 0 6px var(--accent-yellow);
+        }
+        
+        .feed-status-dot.offline {
+            background: var(--accent-red);
+        }
+        
+        .feed-name {
+            flex: 1;
+            color: var(--text-primary);
+        }
+        
+        .feed-count {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        
+        .feed-updated {
+            font-size: 9px;
+            color: var(--text-dim);
+            margin-left: 6px;
+        }
+        /* CHART BARS */
+        
+        .mini-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 60px;
+        }
+        
+        .chart-bar {
+            flex: 1;
+            background: var(--accent-cyan-dim);
+            border-top: 1px solid var(--accent-cyan);
+            border-radius: 1px 1px 0 0;
+            transition: background 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .chart-bar:hover {
+            background: rgba(0, 212, 255, 0.3);
+        }
+        
+        .chart-bar.red-bar {
+            background: var(--accent-red-dim);
+            border-top-color: var(--accent-red);
+        }
+        
+        .chart-bar.red-bar:hover {
+            background: rgba(255, 59, 78, 0.25);
+        }
+        /* GEO MAP PLACEHOLDER */
+        
+        .geo-placeholder {
+            background: var(--bg-deep);
+            border: 1px solid var(--border);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .geo-dots {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .geo-dot {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--accent-red);
+            box-shadow: 0 0 8px var(--accent-red);
+            animation: geoGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes geoGlow {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.3;
+                transform: scale(1.5);
+            }
+        }
+        /* ACTIVITY LOG */
+        
+        .activity-line {
+            display: flex;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+        }
+        
+        .activity-line:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-time {
+            color: var(--text-dim);
+            flex-shrink: 0;
+            font-size: 10px;
+            width: 55px;
+        }
+        
+        .activity-text {
+            color: var(--text-secondary);
+            flex: 1;
+        }
+        
+        .activity-text strong {
+            color: var(--text-primary);
+        }
+        
+        .activity-text .highlight {
+            color: var(--accent-cyan);
+        }
+        /* ═══════════════════════════════════════
+     THREAT FEEDS VIEW
+  ═══════════════════════════════════════ */
+        
+        .feed-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .feed-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .feed-card:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.05);
+        }
+        
+        .feed-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        
+        .feed-card-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: 0.5px;
+        }
+        
+        .feed-card-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        
+        .feed-card-stat {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        
+        .feed-card-stat strong {
+            display: block;
+            font-size: 16px;
+            color: var(--text-primary);
+            font-family: var(--font-display);
+            font-weight: 700;
+        }
+        /* ═══════════════════════════════════════
+     USERS VIEW
+  ═══════════════════════════════════════ */
+        
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        
+        .user-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            padding: 20px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .user-card:hover {
+            border-color: var(--border-bright);
+            transform: translateY(-1px);
+        }
+        
+        .user-card-top {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        
+        .user-card-avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .user-card-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .user-card-email {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        
+        .user-card-role {
+            font-size: 9px;
+            letter-spacing: 1px;
+            color: var(--accent-cyan);
+            margin-top: 3px;
+            text-transform: uppercase;
+        }
+        
+        .user-card-meta {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        
+        .user-card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        /* ═══════════════════════════════════════
+     PROFILE VIEW
+  ═══════════════════════════════════════ */
+        
+        .profile-hero {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            padding: 32px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .profile-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple), var(--accent-cyan));
+            background-size: 200% 100%;
+            animation: gradFlow 4s linear infinite;
+        }
+        
+        @keyframes gradFlow {
+            0% {
+                background-position: 0% 0%;
+            }
+            100% {
+                background-position: 200% 0%;
+            }
+        }
+        
+        .profile-top {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .profile-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            border: 2px solid var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+            flex-shrink: 0;
+            background: var(--bg-deep);
+            color: var(--accent-cyan);
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .profile-avatar-large:hover::after {
+            content: '📷 Change';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            letter-spacing: 1px;
+        }
+        
+        .profile-name {
+            font-family: var(--font-display);
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        
+        .profile-title {
+            font-size: 12px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+        
+        .profile-stats {
+            display: flex;
+            gap: 32px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .profile-stat {
+            text-align: center;
+        }
+        
+        .profile-stat-value {
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+        
+        .profile-stat-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+        /* ═══════════════════════════════════════
+     SETTINGS VIEW
+  ═══════════════════════════════════════ */
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 20px;
+        }
+        
+        .settings-nav {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            padding: 8px;
+            height: fit-content;
+        }
+        
+        .settings-nav-item {
+            padding: 9px 12px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-left: 2px solid transparent;
+            transition: all 0.15s;
+        }
+        
+        .settings-nav-item:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+        
+        .settings-nav-item.active {
+            background: var(--accent-cyan-dim);
+            color: var(--accent-cyan);
+            border-left-color: var(--accent-cyan);
+        }
+        
+        .settings-section {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            padding: 24px;
+        }
+        
+        .settings-section-title {
+            font-family: var(--font-display);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        
+        .settings-section-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            letter-spacing: 0.3px;
+        }
+        
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-label {
+            font-size: 12px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .setting-desc {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        /* TOGGLE */
+        
+        .toggle {
+            width: 40px;
+            height: 22px;
+            border-radius: 11px;
+            background: var(--border);
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .toggle.on {
+            background: var(--accent-cyan);
+        }
+        
+        .toggle-knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        
+        .toggle.on .toggle-knob {
+            transform: translateX(18px);
+        }
+        /* ═══════════════════════════════════════
+     ALERTS / NOTIFICATIONS
+  ═══════════════════════════════════════ */
+        
+        .alert-item {
+            display: flex;
+            gap: 14px;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+        
+        .alert-item:hover {
+            background: var(--bg-hover);
+        }
+        
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+        
+        .alert-item.unread {
+            background: rgba(0, 212, 255, 0.02);
+        }
+        
+        .alert-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .alert-content {
+            flex: 1;
+        }
+        
+        .alert-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 3px;
+        }
+        
+        .alert-body {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        .alert-time {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        /* ═══════════════════════════════════════
+     MODAL
+  ═══════════════════════════════════════ */
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 5, 8, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .modal {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-bright);
+            border-top: 2px solid var(--accent-cyan);
+            width: 540px;
+            max-width: 95vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 0 80px rgba(0, 212, 255, 0.1);
+            animation: modalIn 0.2s ease;
+        }
+        
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.96) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        .modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .modal-title {
+            font-family: var(--font-display);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .modal-close {
+            font-size: 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px;
+        }
+        
+        .modal-close:hover {
+            color: var(--accent-red);
+        }
+        
+        .modal-body {
+            padding: 24px;
+        }
+        
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        /* ═══════════════════════════════════════
+     TOAST NOTIFICATIONS
+  ═══════════════════════════════════════ */
+        
+        #toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .toast {
+            padding: 12px 18px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent-cyan);
+            font-size: 11px;
+            color: var(--text-primary);
+            min-width: 260px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            animation: toastIn 0.3s ease;
+            letter-spacing: 0.3px;
+        }
+        
+        .toast.toast-success {
+            border-left-color: var(--accent-green);
+        }
+        
+        .toast.toast-error {
+            border-left-color: var(--accent-red);
+        }
+        
+        .toast.toast-warning {
+            border-left-color: var(--accent-orange);
+        }
+        
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        /* ═══════════════════════════════════════
+     MISC UTILITIES
+  ═══════════════════════════════════════ */
+        
+        .tag {
+            padding: 2px 7px;
+            font-size: 9px;
+            background: var(--bg-deep);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin: 2px;
+        }
+        
+        .tag.cyan {
+            border-color: rgba(0, 212, 255, 0.3);
+            color: var(--accent-cyan);
+            background: var(--accent-cyan-dim);
+        }
+        
+        .tag.red {
+            border-color: rgba(255, 59, 78, 0.3);
+            color: var(--accent-red);
+            background: var(--accent-red-dim);
+        }
+        
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+        }
+        
+        .text-cyan {
+            color: var(--accent-cyan);
+        }
+        
+        .text-red {
+            color: var(--accent-red);
+        }
+        
+        .text-orange {
+            color: var(--accent-orange);
+        }
+        
+        .text-green {
+            color: var(--accent-green);
+        }
+        
+        .text-muted {
+            color: var(--text-muted);
+        }
+        
+        .text-small {
+            font-size: 10px;
+        }
+        
+        .text-mono {
+            font-family: var(--font-mono);
+        }
+        
+        .mb-4 {
+            margin-bottom: 4px;
+        }
+        
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        
+        .mb-16 {
+            margin-bottom: 16px;
+        }
+        
+        .mb-24 {
+            margin-bottom: 24px;
+        }
+        
+        .mt-8 {
+            margin-top: 8px;
+        }
+        
+        .mt-16 {
+            margin-top: 16px;
+        }
+        
+        .flex {
+            display: flex;
+        }
+        
+        .flex-center {
+            display: flex;
+            align-items: center;
+        }
+        
+        .flex-between {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .gap-8 {
+            gap: 8px;
+        }
+        
+        .gap-12 {
+            gap: 12px;
+        }
+        /* PROGRESS BAR */
+        
+        .progress-bar {
+            height: 4px;
+            background: var(--bg-deep);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 6px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+        /* LOADING SPINNER */
+        
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: inline-block;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        /* ═══════════════════════════════════════
+     REGISTER FORM SPECIFIC
+  ═══════════════════════════════════════ */
+        
+        #register-page {
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-void);
+            position: relative;
+            flex-direction: column;
+        }
+        /* ═══════════════════════════════════════
+     RESPONSIVE
+  ═══════════════════════════════════════ */
+        
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .feed-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .users-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 52px;
+            }
+            .sidebar .brand,
+            .sidebar-section-label,
+            .nav-item span,
+            .sidebar-user-info,
+            .nav-badge {
+                display: none;
+            }
+            .nav-item {
+                justify-content: center;
+                padding: 12px;
+            }
+            .sidebar-user {
+                justify-content: center;
+            }
+            .grid-2,
+            .grid-1-2,
+            .grid-2-1 {
+                grid-template-columns: 1fr;
+            }
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════════════════════════════════════
+     LOGIN PAGE
+═══════════════════════════════════════ -->
+    <div class="page active" id="login-page">
+        <div class="login-grid-bg"></div>
+        <div class="login-glow"></div>
+        <div class="login-scan-line"></div>
+
+        <div class="login-container">
+            <div class="login-logo">
+                <span class="logo-icon">🛡</span>
+                <h1>ThreatPulse</h1>
+                <p>Threat Intelligence Aggregation Platform</p>
+            </div>
+            <div class="login-alert" id="login-error">⚠ Invalid credentials. Please try again.</div>
+            <div class="form-group">
+                <label>Access Identifier</label>
+                <input type="text" id="login-username" placeholder="username or email" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Authentication Key</label>
+                <input type="password" id="login-password" placeholder="••••••••••">
+            </div>
+            <div class="flex-between mb-16" style="font-size:10px;">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--text-muted);">
+        <input type="checkbox" id="remember-me" style="width:auto;margin:0;">
+        Remember session
+      </label>
+                <a style="color:var(--accent-cyan);cursor:pointer;" onclick="showToast('Password reset link sent to registered email.','info')">Forgot password?</a>
+            </div>
+            <button class="btn btn-primary" onclick="handleLogin()">
+      <span>⚡</span> Authenticate
+    </button>
+            <div class="login-footer">
+                No account? <a onclick="showPage('register-page')">Request Access</a>
+            </div>
+        </div>
+
+        <div class="login-demo-creds">
+            Demo: <span>admin</span> / <span>admin123</span> &nbsp;•&nbsp; <span>analyst</span> / <span>analyst123</span> &nbsp;•&nbsp; <span>viewer</span> / <span>viewer123</span>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+     REGISTER PAGE
+═══════════════════════════════════════ -->
+    <div class="page" id="register-page">
+        <div class="login-grid-bg"></div>
+        <div class="login-glow"></div>
+        <div class="login-scan-line"></div>
+
+        <div class="login-container" style="width:500px;max-width:95vw;">
+            <div class="login-logo">
+                <span class="logo-icon">🛡</span>
+                <h1>ThreatPulse</h1>
+                <p>Create Analyst Account</p>
+            </div>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="reg-name" placeholder="Jane Doe">
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="reg-email" placeholder="analyst@org.com">
+            </div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="reg-username" placeholder="j.doe">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="reg-password" placeholder="••••••••••">
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <select id="reg-role">
+        <option value="Analyst">Analyst</option>
+        <option value="Viewer">Viewer</option>
+        <option value="Admin">Admin</option>
+      </select>
+            </div>
+            <button class="btn btn-primary" onclick="handleRegister()">
+      <span>✓</span> Create Account
+    </button>
+            <div class="login-footer">
+                Already have access? <a onclick="showPage('login-page')">Sign in</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+     MAIN APP PAGE
+═══════════════════════════════════════ -->
+    <div class="page" id="app-page">
+
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <div class="brand">THREATPULSE</div>
+                <span class="brand-sub">v3.1.0 — LIVE</span>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-label">Core</div>
+                <div class="nav-item active" onclick="switchView('dashboard')">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" onclick="switchView('feeds')">
+                    <span class="nav-icon">📡</span>
+                    <span>Threat Feeds</span>
+                    <span class="nav-badge">12</span>
+                </div>
+                <div class="nav-item" onclick="switchView('iocs')">
+                    <span class="nav-icon">🔍</span>
+                    <span>IOC Explorer</span>
+                </div>
+                <div class="nav-item" onclick="switchView('alerts')">
+                    <span class="nav-icon">🚨</span>
+                    <span>Alerts</span>
+                    <span class="nav-badge">5</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-label">Intelligence</div>
+                <div class="nav-item" onclick="switchView('reports')">
+                    <span class="nav-icon">📋</span>
+                    <span>Reports</span>
+                </div>
+                <div class="nav-item" onclick="switchView('actors')">
+                    <span class="nav-icon">👤</span>
+                    <span>Threat Actors</span>
+                </div>
+                <div class="nav-item" onclick="switchView('hunt')">
+                    <span class="nav-icon">🎯</span>
+                    <span>Threat Hunt</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section" id="admin-nav" style="display:none;">
+                <div class="sidebar-section-label">Admin</div>
+                <div class="nav-item" onclick="switchView('users')">
+                    <span class="nav-icon">👥</span>
+                    <span>Users</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-label">Account</div>
+                <div class="nav-item" onclick="switchView('profile')">
+                    <span class="nav-icon">🧑</span>
+                    <span>My Profile</span>
+                </div>
+                <div class="nav-item" onclick="switchView('settings')">
+                    <span class="nav-icon">⚙</span>
+                    <span>Settings</span>
+                </div>
+            </div>
+
+            <div class="sidebar-bottom">
+                <div class="sidebar-user" onclick="switchView('profile')">
+                    <div class="avatar avatar-cyan" id="sidebar-avatar">A</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name" id="sidebar-username">Admin</div>
+                        <div class="sidebar-user-role" id="sidebar-role">ADMINISTRATOR</div>
+                    </div>
+                </div>
+                <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px;justify-content:center;" onclick="handleLogout()">
+        ⏏ Logout
+      </button>
+            </div>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+
+            <!-- TOP BAR -->
+            <div class="topbar">
+                <div class="topbar-title" id="topbar-title">Dashboard</div>
+                <div class="topbar-search">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" placeholder="Search threats, IOCs, IPs..." id="global-search" oninput="globalSearch(this.value)">
+                </div>
+                <div class="topbar-right">
+                    <div class="status-dot"></div>
+                    <div class="topbar-time" id="topbar-clock">00:00:00 UTC</div>
+                    <div class="topbar-notif" onclick="switchView('alerts')">
+                        🔔
+                        <div class="notif-badge" id="notif-count">5</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ DASHBOARD VIEW ═══ -->
+            <div class="view active" id="view-dashboard">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Threat Intelligence <span>Dashboard</span></div>
+                        <div class="section-subtitle">Real-time aggregated threat intelligence — Last sync: <span id="last-sync">just now</span></div>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="refreshDashboard()">⟳ Refresh</button>
+                </div>
+
+                <!-- STAT CARDS -->
+                <div class="stats-grid">
+                    <div class="stat-card danger">
+                        <div class="stat-icon">🔴</div>
+                        <div class="stat-label">Critical Threats</div>
+                        <div class="stat-value" id="stat-critical">247</div>
+                        <div class="stat-change up">↑ 18 in last hour</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-icon">⚠</div>
+                        <div class="stat-label">Active IOCs</div>
+                        <div class="stat-value" id="stat-iocs">12,843</div>
+                        <div class="stat-change up">↑ 342 today</div>
+                    </div>
+                    <div class="stat-card info">
+                        <div class="stat-icon">📡</div>
+                        <div class="stat-label">Feed Sources</div>
+                        <div class="stat-value" id="stat-feeds">24</div>
+                        <div class="stat-change">21 active</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-icon">✓</div>
+                        <div class="stat-label">Blocked Threats</div>
+                        <div class="stat-value" id="stat-blocked">1,092</div>
+                        <div class="stat-change down">↓ Threat score: LOW</div>
+                    </div>
+                </div>
+
+                <!-- ROW 2 -->
+                <div class="grid-2-1">
+                    <!-- THREAT TABLE -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">⚠ Latest Threat Indicators</span>
+                            <button class="btn btn-ghost btn-xs" onclick="switchView('iocs')">View All</button>
+                        </div>
+                        <table class="threat-table" id="threat-table">
+                            <thead>
+                                <tr>
+                                    <th>Indicator</th>
+                                    <th>Type</th>
+                                    <th>Severity</th>
+                                    <th>Source</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="threat-table-body">
+                                <!-- populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- FEED STATUS -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">📡 Feed Status</span>
+                            <span class="badge badge-info">24 Total</span>
+                        </div>
+                        <div id="feed-status-list">
+                            <!-- populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROW 3 -->
+                <div class="grid-1-2">
+                    <!-- GEO ATTACKS -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">🌍 Attack Origins</span>
+                            <button class="btn btn-ghost btn-xs">Expand</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="geo-placeholder">
+                                <div class="geo-dots" id="geo-dots"></div>
+                                <div style="font-size:32px;opacity:0.4;">🗺</div>
+                                <div style="font-size:11px;color:var(--text-muted);">Real-time attack origin map</div>
+                                <div style="font-size:10px;color:var(--text-dim);">Connect GeoIP service to enable</div>
+                            </div>
+                            <div class="mt-8" id="geo-list">
+                                <!-- populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- THREAT VOLUME CHART + ACTIVITY -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">📈 24h Threat Volume</span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="mini-chart" id="threat-chart"></div>
+                            <div class="flex-between mt-8" style="font-size:9px;color:var(--text-muted);">
+                                <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>Now</span>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="panel-title mb-8" style="padding:0;">🕒 Activity Log</div>
+                            <div id="activity-log">
+                                <!-- populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROW 4 -->
+                <div class="grid-3">
+                    <!-- TOP MALWARE -->
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title">🦠 Top Malware Families</span></div>
+                        <div id="malware-list">
+                            <!-- populated by JS -->
+                        </div>
+                    </div>
+                    <!-- CVE TRACKER -->
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title">💥 Recent CVEs</span></div>
+                        <div id="cve-list">
+                            <!-- populated by JS -->
+                        </div>
+                    </div>
+                    <!-- THREAT ACTORS -->
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title">👤 Active Threat Actors</span></div>
+                        <div id="actor-list">
+                            <!-- populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ THREAT FEEDS VIEW ═══ -->
+            <div class="view" id="view-feeds">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Threat <span>Feeds</span></div>
+                        <div class="section-subtitle">24 integrated intelligence sources</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="openAddFeedModal()">+ Add Feed</button>
+                </div>
+                <div class="feed-grid" id="feeds-grid">
+                    <!-- populated by JS -->
+                </div>
+            </div>
+
+            <!-- ═══ IOC EXPLORER VIEW ═══ -->
+            <div class="view" id="view-iocs">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">IOC <span>Explorer</span></div>
+                        <div class="section-subtitle">Browse and search indicators of compromise</div>
+                    </div>
+                    <div class="flex gap-8">
+                        <select class="form-group" style="padding:7px 12px;background:var(--bg-input);border:1px solid var(--border);color:var(--text-secondary);font-family:var(--font-mono);font-size:11px;outline:none;" id="ioc-filter-type" onchange="filterIOCs()">
+            <option value="">All Types</option>
+            <option value="IP">IP Address</option>
+            <option value="Domain">Domain</option>
+            <option value="Hash">File Hash</option>
+            <option value="URL">URL</option>
+            <option value="Email">Email</option>
+          </select>
+                        <select style="padding:7px 12px;background:var(--bg-input);border:1px solid var(--border);color:var(--text-secondary);font-family:var(--font-mono);font-size:11px;outline:none;" id="ioc-filter-sev" onchange="filterIOCs()">
+            <option value="">All Severity</option>
+            <option value="Critical">Critical</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Indicators of Compromise</span>
+                        <span class="text-small text-muted" id="ioc-count">Showing 50 of 12,843</span>
+                    </div>
+                    <table class="threat-table">
+                        <thead>
+                            <tr>
+                                <th>Value</th>
+                                <th>Type</th>
+                                <th>Severity</th>
+                                <th>Confidence</th>
+                                <th>First Seen</th>
+                                <th>Last Seen</th>
+                                <th>Source</th>
+                                <th>Tags</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ioc-table-body">
+                            <!-- populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ═══ ALERTS VIEW ═══ -->
+            <div class="view" id="view-alerts">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Security <span>Alerts</span></div>
+                        <div class="section-subtitle">Active notifications and triggered rules</div>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="markAllRead()">✓ Mark All Read</button>
+                </div>
+                <div class="panel" id="alerts-panel">
+                    <!-- populated by JS -->
+                </div>
+            </div>
+
+            <!-- ═══ REPORTS VIEW ═══ -->
+            <div class="view" id="view-reports">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Intelligence <span>Reports</span></div>
+                        <div class="section-subtitle">Generated threat intelligence reports</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="generateReport()">⟳ Generate Report</button>
+                </div>
+                <div class="grid-2">
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title">📋 Recent Reports</span></div>
+                        <div id="reports-list">
+                            <!-- populated by JS -->
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title">📊 Report Summary</span></div>
+                        <div class="panel-body" id="report-summary">
+                            <div style="font-size:11px;color:var(--text-muted);margin-bottom:16px;">Select a report to view summary</div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Total Reports</div>
+                                </div>
+                                <div class="text-cyan">47</div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">This Week</div>
+                                </div>
+                                <div class="text-cyan">8</div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Auto-Generated</div>
+                                </div>
+                                <div class="text-cyan">31</div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Scheduled</div>
+                                </div>
+                                <div class="text-cyan">Daily, Weekly</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ THREAT ACTORS VIEW ═══ -->
+            <div class="view" id="view-actors">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Threat <span>Actors</span></div>
+                        <div class="section-subtitle">Known APT groups and adversary profiles</div>
+                    </div>
+                </div>
+                <div class="grid-3" id="actors-grid">
+                    <!-- populated by JS -->
+                </div>
+            </div>
+
+            <!-- ═══ THREAT HUNT VIEW ═══ -->
+            <div class="view" id="view-hunt">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Threat <span>Hunt</span></div>
+                        <div class="section-subtitle">Query and hunt for threat indicators</div>
+                    </div>
+                </div>
+                <div class="panel mb-16">
+                    <div class="panel-header"><span class="panel-title">🔎 Hunt Query</span></div>
+                    <div class="panel-body">
+                        <div class="form-group" style="margin-bottom:12px;">
+                            <label>Search Query (IP, Domain, Hash, CVE, Actor...)</label>
+                            <input type="text" id="hunt-query" placeholder="e.g. 185.220.101.0/24 or apt28 or CVE-2024-..." style="font-size:13px;">
+                        </div>
+                        <div class="flex gap-8">
+                            <button class="btn btn-primary" style="width:auto;" onclick="runHuntQuery()">⚡ Run Hunt</button>
+                            <button class="btn btn-ghost" onclick="document.getElementById('hunt-query').value=''">✕ Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel" id="hunt-results">
+                    <div class="panel-header"><span class="panel-title">Hunt Results</span></div>
+                    <div class="panel-body" style="color:var(--text-muted);font-size:11px;">Enter a query above to begin hunting...</div>
+                </div>
+            </div>
+
+            <!-- ═══ USERS VIEW (ADMIN) ═══ -->
+            <div class="view" id="view-users">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">User <span>Management</span></div>
+                        <div class="section-subtitle">Manage analyst accounts and permissions</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="openAddUserModal()">+ Add User</button>
+                </div>
+                <div class="users-grid" id="users-grid">
+                    <!-- populated by JS -->
+                </div>
+            </div>
+
+            <!-- ═══ PROFILE VIEW ═══ -->
+            <div class="view" id="view-profile">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">My <span>Profile</span></div>
+                        <div class="section-subtitle">Your analyst account information</div>
+                    </div>
+                </div>
+
+                <div class="profile-hero">
+                    <div class="profile-top">
+                        <div class="profile-avatar-large" id="profile-avatar-large">A</div>
+                        <div>
+                            <div class="profile-name" id="profile-name">Admin User</div>
+                            <div class="profile-title" id="profile-title">PLATFORM ADMINISTRATOR</div>
+                            <div style="margin-top:8px;" id="profile-badges">
+                                <span class="badge badge-info">Admin</span>
+                                <span class="badge badge-new">TLP:AMBER</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="ps-reports">47</div>
+                            <div class="profile-stat-label">Reports</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="ps-iocs">1,204</div>
+                            <div class="profile-stat-label">IOCs Added</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="ps-feeds">8</div>
+                            <div class="profile-stat-label">Feeds Managed</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="ps-days">142</div>
+                            <div class="profile-stat-label">Days Active</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">Account Details</span>
+                            <button class="btn btn-ghost btn-xs" onclick="openEditProfileModal()">✏ Edit</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Full Name</div>
+                                </div>
+                                <div class="text-cyan" id="pf-name">Admin User</div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Username</div>
+                                </div>
+                                <div class="text-muted" id="pf-username">admin</div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Email</div>
+                                </div>
+                                <div class="text-muted" id="pf-email">admin@threatpulse.io</div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Role</div>
+                                </div>
+                                <div><span class="badge badge-info" id="pf-role">Admin</span></div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">TLP Clearance</div>
+                                </div>
+                                <div><span class="badge badge-new" id="pf-tlp">TLP:AMBER</span></div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Member Since</div>
+                                </div>
+                                <div class="text-muted" id="pf-since">Jan 15, 2024</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title">Recent Activity</span></div>
+                        <div id="profile-activity">
+                            <!-- populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">API Keys</span>
+                        <button class="btn btn-ghost btn-xs" onclick="generateAPIKey()">+ Generate Key</button>
+                    </div>
+                    <div id="api-keys-list">
+                        <!-- populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SETTINGS VIEW ═══ -->
+            <div class="view" id="view-settings">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Platform <span>Settings</span></div>
+                        <div class="section-subtitle">Configure your ThreatPulse environment</div>
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="settings-nav">
+                        <div class="settings-nav-item active" onclick="switchSettingsTab(this,'tab-general')">⚙ General</div>
+                        <div class="settings-nav-item" onclick="switchSettingsTab(this,'tab-notifications')">🔔 Notifications</div>
+                        <div class="settings-nav-item" onclick="switchSettingsTab(this,'tab-feeds')">📡 Feed Config</div>
+                        <div class="settings-nav-item" onclick="switchSettingsTab(this,'tab-security')">🔒 Security</div>
+                        <div class="settings-nav-item" onclick="switchSettingsTab(this,'tab-appearance')">🎨 Appearance</div>
+                        <div class="settings-nav-item" onclick="switchSettingsTab(this,'tab-integrations')">🔗 Integrations</div>
+                        <div class="settings-nav-item" onclick="switchSettingsTab(this,'tab-password')">🔑 Password</div>
+                    </div>
+
+                    <div class="settings-section">
+                        <!-- GENERAL TAB -->
+                        <div id="tab-general" class="settings-tab active-tab">
+                            <div class="settings-section-title">General Settings</div>
+                            <div class="settings-section-desc">Configure platform-wide defaults and behavior.</div>
+                            <div class="form-group"><label>Organization Name</label><input type="text" id="org-name" value="ACME Cyber Defense"></div>
+                            <div class="form-group"><label>Default TLP Level</label>
+                                <select id="default-tlp">
+                <option>TLP:WHITE</option>
+                <option selected>TLP:GREEN</option>
+                <option>TLP:AMBER</option>
+                <option>TLP:RED</option>
+              </select>
+                            </div>
+                            <div class="form-group"><label>Feed Refresh Interval (minutes)</label><input type="number" id="refresh-interval" value="15"></div>
+                            <div class="form-group"><label>Timezone</label>
+                                <select id="timezone"><option>UTC</option><option>US/Eastern</option><option>US/Pacific</option><option>Europe/London</option><option>Asia/Tokyo</option></select>
+                            </div>
+                            <button class="btn btn-primary" style="width:auto;" onclick="saveSettings('general')">💾 Save Changes</button>
+                        </div>
+
+                        <!-- NOTIFICATIONS TAB -->
+                        <div id="tab-notifications" class="settings-tab" style="display:none;">
+                            <div class="settings-section-title">Notification Settings</div>
+                            <div class="settings-section-desc">Choose which events trigger alerts.</div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Critical Threats</div>
+                                    <div class="setting-desc">Notify on critical severity IOCs</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)" id="notif-critical">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">New CVEs (CVSS ≥ 9.0)</div>
+                                    <div class="setting-desc">Critical vulnerability disclosures</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Feed Failures</div>
+                                    <div class="setting-desc">Notify when a feed goes offline</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">New Threat Actor Reports</div>
+                                    <div class="setting-desc">Alerts for new APT activity</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Daily Digest Email</div>
+                                    <div class="setting-desc">Summary email at 08:00 UTC</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Weekly Report</div>
+                                    <div class="setting-desc">Full analysis every Monday</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" style="width:auto;margin-top:16px;" onclick="saveSettings('notifications')">💾 Save</button>
+                        </div>
+
+                        <!-- FEED CONFIG TAB -->
+                        <div id="tab-feeds" class="settings-tab" style="display:none;">
+                            <div class="settings-section-title">Feed Configuration</div>
+                            <div class="settings-section-desc">API keys and endpoints for intelligence feeds.</div>
+                            <div class="form-group"><label>VirusTotal API Key</label><input type="password" value="••••••••••••••••••••••••" placeholder="Enter API key"></div>
+                            <div class="form-group"><label>Shodan API Key</label><input type="password" value="••••••••••••••••" placeholder="Enter API key"></div>
+                            <div class="form-group"><label>MISP Instance URL</label><input type="text" value="https://misp.internal" placeholder="https://misp.example.com"></div>
+                            <div class="form-group"><label>TAXII Server URL</label><input type="text" placeholder="https://taxii.example.com/taxii/"></div>
+                            <div class="form-group"><label>AlienVault OTX Key</label><input type="password" placeholder="Enter API key"></div>
+                            <button class="btn btn-primary" style="width:auto;" onclick="saveSettings('feeds')">💾 Save Keys</button>
+                        </div>
+
+                        <!-- SECURITY TAB -->
+                        <div id="tab-security" class="settings-tab" style="display:none;">
+                            <div class="settings-section-title">Security Settings</div>
+                            <div class="settings-section-desc">Authentication and session security options.</div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Two-Factor Authentication</div>
+                                    <div class="setting-desc">TOTP via authenticator app</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Session Timeout</div>
+                                    <div class="setting-desc">Auto logout after inactivity</div>
+                                </div>
+                                <select style="padding:6px 10px;background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);font-family:var(--font-mono);font-size:11px;outline:none;">
+                <option>30 minutes</option>
+                <option selected>1 hour</option>
+                <option>4 hours</option>
+                <option>8 hours</option>
+              </select>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">IP Allowlist</div>
+                                    <div class="setting-desc">Restrict logins to specific IPs</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Audit Logging</div>
+                                    <div class="setting-desc">Log all user actions</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">SSO / SAML</div>
+                                    <div class="setting-desc">Enterprise single sign-on</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- APPEARANCE TAB -->
+                        <div id="tab-appearance" class="settings-tab" style="display:none;">
+                            <div class="settings-section-title">Appearance</div>
+                            <div class="settings-section-desc">Customize the platform visual experience.</div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Color Theme</div>
+                                </div>
+                                <select style="padding:6px 10px;background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);font-family:var(--font-mono);font-size:11px;outline:none;" onchange="changeTheme(this.value)">
+                <option value="cyan" selected>Cyan (Default)</option>
+                <option value="green">Green Matrix</option>
+                <option value="orange">Amber Alert</option>
+                <option value="purple">Purple Haze</option>
+              </select>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Compact Mode</div>
+                                    <div class="setting-desc">Reduce spacing for more data</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Animations</div>
+                                    <div class="setting-desc">Enable UI motion effects</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Scan Line Effect</div>
+                                    <div class="setting-desc">Retro CRT scan line on login</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- INTEGRATIONS TAB -->
+                        <div id="tab-integrations" class="settings-tab" style="display:none;">
+                            <div class="settings-section-title">Integrations</div>
+                            <div class="settings-section-desc">Connect external tools and platforms.</div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Splunk SIEM</div>
+                                    <div class="setting-desc">HEC endpoint forwarding</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Elastic/OpenSearch</div>
+                                    <div class="setting-desc">IOC index synchronization</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Slack Alerts</div>
+                                    <div class="setting-desc">Post critical alerts to channel</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">PagerDuty</div>
+                                    <div class="setting-desc">Escalation for critical events</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Jira / ServiceNow</div>
+                                    <div class="setting-desc">Auto-create tickets for threats</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top:16px;"><label>Webhook URL</label><input type="text" placeholder="https://hooks.example.com/..."></div>
+                            <button class="btn btn-primary" style="width:auto;" onclick="saveSettings('integrations')">💾 Save Integrations</button>
+                        </div>
+
+                        <!-- PASSWORD TAB -->
+                        <div id="tab-password" class="settings-tab" style="display:none;">
+                            <div class="settings-section-title">Change Password</div>
+                            <div class="settings-section-desc">Update your authentication credentials.</div>
+                            <div class="form-group"><label>Current Password</label><input type="password" id="pw-current" placeholder="••••••••••"></div>
+                            <div class="form-group"><label>New Password</label><input type="password" id="pw-new" placeholder="••••••••••"></div>
+                            <div class="form-group"><label>Confirm New Password</label><input type="password" id="pw-confirm" placeholder="••••••••••"></div>
+                            <button class="btn btn-primary" style="width:auto;" onclick="changePassword()">🔑 Update Password</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+     MODALS
+═══════════════════════════════════════ -->
+
+    <!-- Add/Edit User Modal -->
+    <div class="modal-overlay" id="user-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="user-modal-title">Add New User</div>
+                <div class="modal-close" onclick="closeModal('user-modal')">×</div>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-user-id">
+                <div class="form-group"><label>Full Name</label><input type="text" id="modal-name" placeholder="Jane Doe"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="modal-email" placeholder="jane@org.com"></div>
+                <div class="form-group"><label>Username</label><input type="text" id="modal-username" placeholder="j.doe"></div>
+                <div class="form-group"><label>Password</label><input type="password" id="modal-password" placeholder="••••••••••"></div>
+                <div class="form-group"><label>Role</label>
+                    <select id="modal-role">
+          <option value="Admin">Admin</option>
+          <option value="Analyst" selected>Analyst</option>
+          <option value="Viewer">Viewer</option>
+        </select>
+                </div>
+                <div class="form-group"><label>TLP Clearance</label>
+                    <select id="modal-tlp">
+          <option>TLP:WHITE</option>
+          <option>TLP:GREEN</option>
+          <option selected>TLP:AMBER</option>
+          <option>TLP:RED</option>
+        </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('user-modal')">Cancel</button>
+                <button class="btn btn-primary" style="width:auto;" onclick="saveUser()">💾 Save User</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal-overlay" id="profile-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Edit Profile</div>
+                <div class="modal-close" onclick="closeModal('profile-modal')">×</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group"><label>Full Name</label><input type="text" id="edit-fullname" placeholder="Full Name"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="edit-email" placeholder="email@org.com"></div>
+                <div class="form-group"><label>Job Title / Department</label><input type="text" id="edit-title" placeholder="Senior Threat Analyst"></div>
+                <div class="form-group"><label>Bio</label><textarea id="edit-bio" placeholder="Short description..." style="height:80px;resize:vertical;"></textarea></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('profile-modal')">Cancel</button>
+                <button class="btn btn-primary" style="width:auto;" onclick="saveProfile()">💾 Save Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Feed Modal -->
+    <div class="modal-overlay" id="feed-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Add Threat Feed</div>
+                <div class="modal-close" onclick="closeModal('feed-modal')">×</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group"><label>Feed Name</label><input type="text" id="new-feed-name" placeholder="e.g. My TAXII Feed"></div>
+                <div class="form-group"><label>Feed Type</label>
+                    <select id="new-feed-type">
+          <option>STIX/TAXII</option>
+          <option>MISP</option>
+          <option>CSV</option>
+          <option>JSON</option>
+          <option>RSS</option>
+          <option>API</option>
+        </select>
+                </div>
+                <div class="form-group"><label>URL / Endpoint</label><input type="text" id="new-feed-url" placeholder="https://feed.example.com/taxii/..."></div>
+                <div class="form-group"><label>API Key (if required)</label><input type="password" id="new-feed-key" placeholder="••••••••••••••••"></div>
+                <div class="form-group"><label>Refresh Interval (minutes)</label><input type="number" id="new-feed-interval" value="30"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('feed-modal')">Cancel</button>
+                <button class="btn btn-primary" style="width:auto;" onclick="addFeed()">+ Add Feed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- ═══════════════════════════════════════
+     JAVASCRIPT BACKEND
+═══════════════════════════════════════ -->
+    <script>
+        'use strict';
+
+        /* ═══════════════════════════════════════
+           STATE / BACKEND SIMULATION
+        ═══════════════════════════════════════ */
+        const State = {
+            currentUser: null,
+            currentView: 'dashboard',
+            settings: {
+                theme: 'cyan',
+                animations: true,
+                orgName: 'ACME Cyber Defense',
+                defaultTLP: 'TLP:GREEN',
+                refreshInterval: 15,
+                notifications: {
+                    critical: true,
+                    cve: true,
+                    feedFailure: true,
+                    actor: false,
+                    dailyDigest: true,
+                    weekly: false
+                }
+            },
+            users: [{
+                id: 1,
+                name: 'Admin User',
+                username: 'admin',
+                email: 'admin@threatpulse.io',
+                password: 'admin123',
+                role: 'Admin',
+                tlp: 'TLP:AMBER',
+                since: 'Jan 15, 2024',
+                active: true,
+                reports: 47,
+                iocs: 1204,
+                feeds: 8,
+                days: 142
+            }, {
+                id: 2,
+                name: 'Sarah Chen',
+                username: 'analyst',
+                email: 's.chen@threatpulse.io',
+                password: 'analyst123',
+                role: 'Analyst',
+                tlp: 'TLP:GREEN',
+                since: 'Mar 3, 2024',
+                active: true,
+                reports: 23,
+                iocs: 567,
+                feeds: 4,
+                days: 89
+            }, {
+                id: 3,
+                name: 'Marcus Webb',
+                username: 'viewer',
+                email: 'm.webb@threatpulse.io',
+                password: 'viewer123',
+                role: 'Viewer',
+                tlp: 'TLP:WHITE',
+                since: 'Jun 10, 2024',
+                active: true,
+                reports: 0,
+                iocs: 0,
+                feeds: 0,
+                days: 31
+            }, {
+                id: 4,
+                name: 'Priya Nair',
+                username: 'p.nair',
+                email: 'p.nair@threatpulse.io',
+                password: 'pass1234',
+                role: 'Analyst',
+                tlp: 'TLP:AMBER',
+                since: 'Feb 20, 2024',
+                active: false,
+                reports: 12,
+                iocs: 234,
+                feeds: 2,
+                days: 60
+            }, {
+                id: 5,
+                name: 'James Okoro',
+                username: 'j.okoro',
+                email: 'j.okoro@threatpulse.io',
+                password: 'pass1234',
+                role: 'Analyst',
+                tlp: 'TLP:GREEN',
+                since: 'Apr 5, 2024',
+                active: true,
+                reports: 18,
+                iocs: 445,
+                feeds: 3,
+                days: 75
+            }, {
+                id: 6,
+                name: 'Elena Vasquez',
+                username: 'e.vasquez',
+                email: 'e.vasquez@threatpulse.io',
+                password: 'pass1234',
+                role: 'Admin',
+                tlp: 'TLP:RED',
+                since: 'Dec 1, 2023',
+                active: true,
+                reports: 61,
+                iocs: 2341,
+                feeds: 12,
+                days: 200
+            }],
+            threats: [],
+            iocs: [],
+            feeds: [],
+            alerts: [],
+            actors: [],
+            apiKeys: [],
+            nextUserId: 7
+        };
+
+        /* ═══════════════════════════════════════
+           SEED DATA
+        ═══════════════════════════════════════ */
+        function seedData() {
+            State.threats = [{
+                indicator: '185.220.101.47',
+                type: 'IP',
+                severity: 'Critical',
+                source: 'Abuse.ch',
+                time: '2m ago',
+                tags: ['tor', 'c2']
+            }, {
+                indicator: 'a4b23f91c8d72...',
+                type: 'Hash',
+                severity: 'Critical',
+                source: 'VirusTotal',
+                time: '7m ago',
+                tags: ['ransomware', 'lockbit']
+            }, {
+                indicator: 'login-secure.ru',
+                type: 'Domain',
+                severity: 'High',
+                source: 'OpenPhish',
+                time: '12m ago',
+                tags: ['phishing']
+            }, {
+                indicator: '45.142.212.100',
+                type: 'IP',
+                severity: 'High',
+                source: 'Shodan',
+                time: '18m ago',
+                tags: ['botnet']
+            }, {
+                indicator: 'CVE-2024-12356',
+                type: 'CVE',
+                severity: 'Critical',
+                source: 'NVD',
+                time: '25m ago',
+                tags: ['rce', 'citrix']
+            }, {
+                indicator: 'update-flash.net',
+                type: 'Domain',
+                severity: 'Medium',
+                source: 'URLhaus',
+                time: '31m ago',
+                tags: ['malware-drop']
+            }, {
+                indicator: '192.168.0.0/24',
+                type: 'CIDR',
+                severity: 'Low',
+                source: 'Internal',
+                time: '45m ago',
+                tags: ['internal']
+            }, {
+                indicator: 'invoice_2024.exe',
+                type: 'Filename',
+                severity: 'High',
+                source: 'Hybrid Analysis',
+                time: '52m ago',
+                tags: ['dropper']
+            }];
+
+            const iocTypes = ['IP', 'Domain', 'Hash', 'URL', 'Email'];
+            const sevs = ['Critical', 'High', 'High', 'Medium', 'Medium', 'Low'];
+            const srcs = ['Abuse.ch', 'VirusTotal', 'Shodan', 'OpenPhish', 'URLhaus', 'OTX', 'MISP', 'ThreatFox'];
+            const sampleVals = [
+                '185.220.101.47', 'a4b23f91c8d72e...', 'phish-login.net', 'http://mal.ru/drop', 'admin@evil.com',
+                '91.108.56.120', 'invoice2024.pdf.exe', 'update-driver.info', 'b3c7f92a1d4e5...', 'cdn-update.xyz',
+                '37.120.238.98', 'secure-bank.pw', 'http://dl.bad/payload', 'support@scam.io', 'dd14a9a...bd72',
+                '194.165.16.78', 'vpn-login.net', 'doc_scan.zip', 'noreply@phish.co', '5.182.207.45'
+            ];
+
+            for (let i = 0; i < 50; i++) {
+                State.iocs.push({
+                    value: sampleVals[i % sampleVals.length] + (i > sampleVals.length ? i : ''),
+                    type: iocTypes[i % iocTypes.length],
+                    severity: sevs[i % sevs.length],
+                    confidence: Math.floor(Math.random() * 40) + 60,
+                    firstSeen: `2024-${String(Math.floor(Math.random() * 12) + 1).padStart(2,'0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2,'0')}`,
+                    lastSeen: `2025-03-0${Math.floor(Math.random() * 6) + 1}`,
+                    source: srcs[i % srcs.length],
+                    tags: ['malware', 'phishing', 'c2', 'botnet', 'ransomware'].slice(0, Math.floor(Math.random() * 2) + 1)
+                });
+            }
+
+            State.feeds = [{
+                id: 1,
+                name: 'Abuse.ch Feodo Tracker',
+                type: 'JSON',
+                status: 'online',
+                iocs: 4821,
+                lastUpdate: '2m ago',
+                source: 'abuse.ch'
+            }, {
+                id: 2,
+                name: 'AlienVault OTX',
+                type: 'API',
+                status: 'online',
+                iocs: 23441,
+                lastUpdate: '5m ago',
+                source: 'otx.alienvault.com'
+            }, {
+                id: 3,
+                name: 'URLhaus',
+                type: 'CSV',
+                status: 'online',
+                iocs: 8932,
+                lastUpdate: '8m ago',
+                source: 'urlhaus.abuse.ch'
+            }, {
+                id: 4,
+                name: 'OpenPhish',
+                type: 'CSV',
+                status: 'online',
+                iocs: 1204,
+                lastUpdate: '15m ago',
+                source: 'openphish.com'
+            }, {
+                id: 5,
+                name: 'Shodan InternetDB',
+                type: 'API',
+                status: 'degraded',
+                iocs: 3422,
+                lastUpdate: '1h ago',
+                source: 'internetdb.shodan.io'
+            }, {
+                id: 6,
+                name: 'VirusTotal Intel',
+                type: 'API',
+                status: 'online',
+                iocs: 15002,
+                lastUpdate: '3m ago',
+                source: 'virustotal.com'
+            }, {
+                id: 7,
+                name: 'ThreatFox',
+                type: 'STIX',
+                status: 'online',
+                iocs: 5641,
+                lastUpdate: '11m ago',
+                source: 'threatfox.abuse.ch'
+            }, {
+                id: 8,
+                name: 'Hybrid Analysis',
+                type: 'API',
+                status: 'online',
+                iocs: 2341,
+                lastUpdate: '7m ago',
+                source: 'hybrid-analysis.com'
+            }, {
+                id: 9,
+                name: 'Cisco Talos',
+                type: 'STIX',
+                status: 'offline',
+                iocs: 0,
+                lastUpdate: '3h ago',
+                source: 'talosintelligence.com'
+            }, {
+                id: 10,
+                name: 'CISA KEV',
+                type: 'JSON',
+                status: 'online',
+                iocs: 1042,
+                lastUpdate: '1d ago',
+                source: 'cisa.gov'
+            }, {
+                id: 11,
+                name: 'MITRE ATT&CK',
+                type: 'STIX',
+                status: 'online',
+                iocs: 8200,
+                lastUpdate: '2d ago',
+                source: 'attack.mitre.org'
+            }, {
+                id: 12,
+                name: 'EmergingThreats',
+                type: 'CSV',
+                status: 'online',
+                iocs: 12500,
+                lastUpdate: '6m ago',
+                source: 'rules.emergingthreats.net'
+            }];
+
+            State.alerts = [{
+                id: 1,
+                icon: '🔴',
+                title: 'CRITICAL: New Ransomware Campaign Detected',
+                body: 'LockBit 4.0 variant identified in 3 IOC feeds. 47 matching hashes flagged. Immediate review recommended.',
+                time: '2 minutes ago',
+                unread: true,
+                severity: 'critical'
+            }, {
+                id: 2,
+                icon: '🟠',
+                title: 'HIGH: Phishing Campaign Targeting Finance',
+                body: 'OpenPhish reports new phishing infrastructure. 12 domains mimicking banking portals added to blocklist.',
+                time: '18 minutes ago',
+                unread: true,
+                severity: 'high'
+            }, {
+                id: 3,
+                icon: '💥',
+                title: 'CVE-2024-12356 — CVSS 9.8 (Citrix Bleed 2)',
+                body: 'Critical RCE vulnerability in Citrix NetScaler. Active exploitation observed in the wild. Patch immediately.',
+                time: '45 minutes ago',
+                unread: true,
+                severity: 'critical'
+            }, {
+                id: 4,
+                icon: '📡',
+                title: 'Feed Alert: Cisco Talos Connection Lost',
+                body: 'Cisco Talos STIX feed has been offline for 3+ hours. Last successful sync: 3h ago. Check connectivity.',
+                time: '3 hours ago',
+                unread: true,
+                severity: 'warning'
+            }, {
+                id: 5,
+                icon: '👤',
+                title: 'Threat Actor Activity: APT29 (Cozy Bear)',
+                body: 'New C2 infrastructure attributed to APT29 identified. 8 new IPs added to block list from European IP space.',
+                time: '5 hours ago',
+                unread: true,
+                severity: 'high'
+            }, {
+                id: 6,
+                icon: '✅',
+                title: 'Weekly Report Generated Successfully',
+                body: 'Your weekly threat intelligence report for 24 Feb – 02 Mar 2025 is ready for review.',
+                time: '1 day ago',
+                unread: false,
+                severity: 'info'
+            }, {
+                id: 7,
+                icon: '🔵',
+                title: 'Feed Sync Completed: All 23 Active Feeds',
+                body: 'Scheduled sync completed. 342 new IOCs ingested across all active threat intelligence sources.',
+                time: '2 days ago',
+                unread: false,
+                severity: 'info'
+            }];
+
+            State.actors = [{
+                name: 'APT29 (Cozy Bear)',
+                origin: 'Russia',
+                targets: 'Government, Defense',
+                activity: 'High',
+                ttps: ['Spearphishing', 'C2 Infrastructure', 'Living off the Land'],
+                iocs: 284,
+                color: 'var(--accent-red)'
+            }, {
+                name: 'APT41 (Winnti)',
+                origin: 'China',
+                targets: 'Tech, Healthcare',
+                activity: 'High',
+                ttps: ['Supply Chain', 'Ransomware', 'Espionage'],
+                iocs: 412,
+                color: 'var(--accent-orange)'
+            }, {
+                name: 'Lazarus Group',
+                origin: 'North Korea',
+                targets: 'Finance, Crypto',
+                activity: 'Very High',
+                ttps: ['Financial Theft', 'Backdoors', 'SWIFT Attacks'],
+                iocs: 678,
+                color: 'var(--accent-yellow)'
+            }, {
+                name: 'Sandworm',
+                origin: 'Russia',
+                targets: 'Critical Infrastructure',
+                activity: 'Medium',
+                ttps: ['ICS/SCADA', 'Wipers', 'Grid Attacks'],
+                iocs: 193,
+                color: 'var(--accent-cyan)'
+            }, {
+                name: 'FIN7',
+                origin: 'Eastern Europe',
+                targets: 'Retail, Hospitality',
+                activity: 'Medium',
+                ttps: ['POS Malware', 'Spearphishing', 'SQL Injection'],
+                iocs: 341,
+                color: 'var(--accent-purple)'
+            }, {
+                name: 'REvil / Sodinokibi',
+                origin: 'Russia',
+                targets: 'All Sectors',
+                activity: 'Low',
+                ttps: ['Ransomware-as-a-Service', 'Double Extortion'],
+                iocs: 89,
+                color: 'var(--accent-green)'
+            }];
+
+            State.apiKeys = [{
+                id: 'key_01',
+                name: 'Production Integration',
+                key: 'tp_live_••••••••••••••••••••••••',
+                created: '2024-01-15',
+                lastUsed: '2m ago'
+            }, {
+                id: 'key_02',
+                name: 'SIEM Connector',
+                key: 'tp_live_••••••••••••••••••••••••',
+                created: '2024-03-01',
+                lastUsed: '1h ago'
+            }];
+        }
+
+        /* ═══════════════════════════════════════
+           AUTH FUNCTIONS
+        ═══════════════════════════════════════ */
+        function handleLogin() {
+            const u = document.getElementById('login-username').value.trim();
+            const p = document.getElementById('login-password').value;
+            const err = document.getElementById('login-error');
+
+            const user = State.users.find(x => (x.username === u || x.email === u) && x.password === p);
+            if (!user) {
+                err.classList.add('show');
+                return;
+            }
+            err.classList.remove('show');
+            State.currentUser = user;
+            initApp();
+            showPage('app-page');
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const role = document.getElementById('reg-role').value;
+
+            if (!name || !email || !username || !password) {
+                showToast('All fields are required.', 'error');
+                return;
+            }
+            if (State.users.find(u => u.username === username)) {
+                showToast('Username already exists.', 'error');
+                return;
+            }
+
+            const newUser = {
+                id: State.nextUserId++,
+                name,
+                username,
+                email,
+                password,
+                role,
+                tlp: 'TLP:GREEN',
+                since: new Date().toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                }),
+                active: true,
+                reports: 0,
+                iocs: 0,
+                feeds: 0,
+                days: 0
+            };
+            State.users.push(newUser);
+            showToast(`Account created for ${name}. You can now log in.`, 'success');
+            showPage('login-page');
+        }
+
+        function handleLogout() {
+            State.currentUser = null;
+            showPage('login-page');
+            showToast('Session terminated.', 'info');
+        }
+
+        /* ═══════════════════════════════════════
+           PAGE NAVIGATION
+        ═══════════════════════════════════════ */
+        function showPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function initApp() {
+            const u = State.currentUser;
+            document.getElementById('sidebar-avatar').textContent = u.name[0].toUpperCase();
+            document.getElementById('sidebar-username').textContent = u.name;
+            document.getElementById('sidebar-role').textContent = u.role.toUpperCase();
+
+            // Show admin nav only for admins
+            document.getElementById('admin-nav').style.display = u.role === 'Admin' ? 'block' : 'none';
+
+            updateProfileView();
+            renderDashboard();
+            startClock();
+        }
+
+        function switchView(view) {
+            State.currentView = view;
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + view).classList.add('active');
+
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event && event.currentTarget && event.currentTarget.classList.add('active');
+
+            const titles = {
+                dashboard: 'Dashboard',
+                feeds: 'Threat Feeds',
+                iocs: 'IOC Explorer',
+                alerts: 'Security Alerts',
+                reports: 'Reports',
+                actors: 'Threat Actors',
+                hunt: 'Threat Hunt',
+                users: 'User Management',
+                profile: 'My Profile',
+                settings: 'Settings'
+            };
+            document.getElementById('topbar-title').textContent = titles[view] || view;
+
+            // Lazy render views
+            if (view === 'feeds') renderFeeds();
+            if (view === 'iocs') renderIOCs();
+            if (view === 'alerts') renderAlerts();
+            if (view === 'reports') renderReports();
+            if (view === 'actors') renderActors();
+            if (view === 'users') renderUsers();
+            if (view === 'profile') updateProfileView();
+        }
+
+        /* ═══════════════════════════════════════
+           CLOCK
+        ═══════════════════════════════════════ */
+        function startClock() {
+            const tick = () => {
+                const now = new Date();
+                document.getElementById('topbar-clock').textContent =
+                    now.toUTCString().slice(17, 25) + ' UTC';
+            };
+            tick();
+            setInterval(tick, 1000);
+        }
+
+        /* ═══════════════════════════════════════
+           DASHBOARD RENDER
+        ═══════════════════════════════════════ */
+        function renderDashboard() {
+            renderThreatTable();
+            renderFeedStatus();
+            renderChart();
+            renderActivityLog();
+            renderMalwareList();
+            renderCVEList();
+            renderActorSummary();
+            renderGeoDots();
+        }
+
+        function renderThreatTable() {
+            const sevBadge = s => `<span class="badge badge-${s.toLowerCase()}">${s}</span>`;
+            const body = State.threats.map(t => `
+    <tr>
+      <td class="text-cyan">${t.indicator}</td>
+      <td><span class="tag">${t.type}</span></td>
+      <td>${sevBadge(t.severity)}</td>
+      <td class="text-muted">${t.source}</td>
+      <td class="text-muted">${t.time}</td>
+    </tr>
+  `).join('');
+            document.getElementById('threat-table-body').innerHTML = body;
+        }
+
+        function renderFeedStatus() {
+            const list = State.feeds.slice(0, 8).map(f => `
+    <div class="feed-item">
+      <div class="feed-status-dot ${f.status}"></div>
+      <div class="feed-name">${f.name}</div>
+      <div class="feed-count">${f.iocs.toLocaleString()}</div>
+      <div class="feed-updated">${f.lastUpdate}</div>
+    </div>
+  `).join('');
+            document.getElementById('feed-status-list').innerHTML = list;
+        }
+
+        function renderChart() {
+            const bars = Array.from({
+                length: 24
+            }, (_, i) => {
+                const h = Math.floor(Math.random() * 85) + 10;
+                const isHigh = h > 70;
+                return `<div class="chart-bar ${isHigh ? 'red-bar' : ''}" style="height:${h}%" title="Hour ${i}:00 — ${Math.floor(h * 3)} threats"></div>`;
+            });
+            document.getElementById('threat-chart').innerHTML = bars.join('');
+        }
+
+        function renderActivityLog() {
+            const logs = [{
+                time: '09:47',
+                text: 'Feed <strong>Abuse.ch</strong> synced — <span class="highlight">+234 IOCs</span>'
+            }, {
+                time: '09:31',
+                text: '<strong>CVE-2024-12356</strong> flagged as <span class="text-red">Critical</span>'
+            }, {
+                time: '09:15',
+                text: 'User <strong>s.chen</strong> added <span class="highlight">47 IP addresses</span>'
+            }, {
+                time: '08:52',
+                text: 'Alert rule triggered: <span class="text-orange">Tor Exit Node Activity</span>'
+            }, {
+                time: '08:34',
+                text: 'Auto-generated <strong>Daily Report</strong> completed'
+            }, {
+                time: '08:00',
+                text: 'Scheduled sync: <span class="highlight">all 23 feeds</span> processed'
+            }];
+            document.getElementById('activity-log').innerHTML = logs.map(l =>
+                `<div class="activity-line"><span class="activity-time">${l.time}</span><span class="activity-text">${l.text}</span></div>`
+            ).join('');
+        }
+
+        function renderMalwareList() {
+            const malware = [{
+                name: 'LockBit 4.0',
+                count: 847,
+                pct: 90
+            }, {
+                name: 'Emotet',
+                count: 612,
+                pct: 65
+            }, {
+                name: 'QakBot',
+                count: 441,
+                pct: 47
+            }, {
+                name: 'Cobalt Strike',
+                count: 398,
+                pct: 42
+            }, {
+                name: 'BlackCat/ALPHV',
+                count: 287,
+                pct: 30
+            }];
+            document.getElementById('malware-list').innerHTML = malware.map(m => `
+    <div style="padding:10px 16px;border-bottom:1px solid var(--border);">
+      <div class="flex-between mb-4">
+        <span style="font-size:11px;color:var(--text-primary);">${m.name}</span>
+        <span style="font-size:10px;color:var(--text-muted);">${m.count} IOCs</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${m.pct}%;background:var(--accent-red);"></div></div>
+    </div>
+  `).join('');
+        }
+
+        function renderCVEList() {
+            const cves = [{
+                id: 'CVE-2024-12356',
+                cvss: '9.8',
+                desc: 'Citrix NetScaler RCE',
+                badge: 'critical'
+            }, {
+                id: 'CVE-2024-11477',
+                cvss: '9.1',
+                desc: '7-Zip Code Execution',
+                badge: 'critical'
+            }, {
+                id: 'CVE-2024-10905',
+                cvss: '8.4',
+                desc: 'Ivanti Connect Secure',
+                badge: 'high'
+            }, {
+                id: 'CVE-2024-9680',
+                cvss: '9.8',
+                desc: 'Firefox Use-After-Free',
+                badge: 'critical'
+            }, {
+                id: 'CVE-2024-8932',
+                cvss: '7.5',
+                desc: 'PHP Remote Code Exec',
+                badge: 'high'
+            }];
+            document.getElementById('cve-list').innerHTML = cves.map(c => `
+    <div style="padding:9px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+      <span class="badge badge-${c.badge}" style="flex-shrink:0;">${c.cvss}</span>
+      <div>
+        <div style="font-size:10px;color:var(--accent-cyan);font-weight:600;">${c.id}</div>
+        <div style="font-size:10px;color:var(--text-muted);">${c.desc}</div>
+      </div>
+    </div>
+  `).join('');
+        }
+
+        function renderActorSummary() {
+            const shown = State.actors.slice(0, 5);
+            document.getElementById('actor-list').innerHTML = shown.map(a => `
+    <div style="padding:9px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="switchView('actors')">
+      <div>
+        <div style="font-size:11px;color:var(--text-primary);font-weight:600;">${a.name}</div>
+        <div style="font-size:10px;color:var(--text-muted);">${a.origin} · ${a.targets}</div>
+      </div>
+      <span class="badge badge-${a.activity === 'High' || a.activity === 'Very High' ? 'high' : 'medium'}">${a.activity}</span>
+    </div>
+  `).join('');
+        }
+
+        function renderGeoDots() {
+            const countries = [{
+                name: 'Russia',
+                count: 847,
+                color: 'var(--accent-red)',
+                top: '22%',
+                left: '58%'
+            }, {
+                name: 'China',
+                count: 612,
+                color: 'var(--accent-orange)',
+                top: '35%',
+                left: '75%'
+            }, {
+                name: 'North Korea',
+                count: 341,
+                color: 'var(--accent-yellow)',
+                top: '30%',
+                left: '78%'
+            }, {
+                name: 'Iran',
+                count: 287,
+                color: 'var(--accent-purple)',
+                top: '38%',
+                left: '60%'
+            }, {
+                name: 'Ukraine',
+                count: 124,
+                color: 'var(--accent-cyan)',
+                top: '25%',
+                left: '55%'
+            }];
+            document.getElementById('geo-dots').innerHTML = countries.map(c =>
+                `<div class="geo-dot" style="top:${c.top};left:${c.left};background:${c.color};box-shadow:0 0 8px ${c.color};"></div>`
+            ).join('');
+            document.getElementById('geo-list').innerHTML = countries.slice(0, 4).map(c =>
+                `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:10px;">
+      <div style="width:6px;height:6px;border-radius:50%;background:${c.color};flex-shrink:0;"></div>
+      <span style="color:var(--text-secondary);flex:1;">${c.name}</span>
+      <span style="color:var(--text-muted);">${c.count} IOCs</span>
+    </div>`
+            ).join('');
+        }
+
+        function refreshDashboard() {
+            const s = document.getElementById('stat-critical');
+            const old = parseInt(s.textContent);
+            s.textContent = old + Math.floor(Math.random() * 5);
+            renderChart();
+            showToast('Dashboard refreshed — ' + new Date().toLocaleTimeString(), 'info');
+            document.getElementById('last-sync').textContent = 'just now';
+        }
+
+        /* ═══════════════════════════════════════
+           FEEDS RENDER
+        ═══════════════════════════════════════ */
+        function renderFeeds() {
+            const statusColor = {
+                online: 'var(--accent-green)',
+                degraded: 'var(--accent-yellow)',
+                offline: 'var(--accent-red)'
+            };
+            document.getElementById('feeds-grid').innerHTML = State.feeds.map(f => `
+    <div class="feed-card">
+      <div class="feed-card-header">
+        <div class="feed-card-name">${f.name}</div>
+        <div style="width:8px;height:8px;border-radius:50%;background:${statusColor[f.status]};box-shadow:0 0 6px ${statusColor[f.status]};"></div>
+      </div>
+      <div style="font-size:9px;color:var(--text-muted);margin-bottom:8px;">${f.source}</div>
+      <span class="badge badge-info">${f.type}</span>
+      <span class="badge badge-${f.status === 'online' ? 'low' : f.status === 'degraded' ? 'medium' : 'critical'}" style="margin-left:4px;">${f.status.toUpperCase()}</span>
+      <div class="feed-card-stats">
+        <div class="feed-card-stat"><strong>${f.iocs.toLocaleString()}</strong>IOCs</div>
+        <div class="feed-card-stat"><strong>${f.lastUpdate}</strong>Last Sync</div>
+      </div>
+      <div class="flex gap-8" style="margin-top:12px;">
+        <button class="btn btn-ghost btn-xs" onclick="syncFeed(${f.id})">⟳ Sync</button>
+        <button class="btn btn-ghost btn-xs" onclick="toggleFeedStatus(${f.id})">${f.status === 'online' ? '⏸ Pause' : '▶ Enable'}</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteFeed(${f.id})">✕</button>
+      </div>
+    </div>
+  `).join('');
+        }
+
+        function syncFeed(id) {
+            const f = State.feeds.find(x => x.id === id);
+            if (!f) return;
+            f.lastUpdate = 'just now';
+            f.iocs += Math.floor(Math.random() * 50) + 5;
+            renderFeeds();
+            showToast(`${f.name} synced successfully.`, 'success');
+        }
+
+        function toggleFeedStatus(id) {
+            const f = State.feeds.find(x => x.id === id);
+            if (!f) return;
+            f.status = f.status === 'online' ? 'offline' : 'online';
+            renderFeeds();
+            showToast(`${f.name} is now ${f.status}.`, f.status === 'online' ? 'success' : 'warning');
+        }
+
+        function deleteFeed(id) {
+            State.feeds = State.feeds.filter(x => x.id !== id);
+            renderFeeds();
+            showToast('Feed removed.', 'info');
+        }
+
+        function openAddFeedModal() {
+            openModal('feed-modal');
+        }
+
+        function addFeed() {
+            const name = document.getElementById('new-feed-name').value.trim();
+            const type = document.getElementById('new-feed-type').value;
+            const url = document.getElementById('new-feed-url').value.trim();
+            if (!name || !url) {
+                showToast('Name and URL are required.', 'error');
+                return;
+            }
+            State.feeds.push({
+                id: Date.now(),
+                name,
+                type,
+                status: 'online',
+                iocs: 0,
+                lastUpdate: 'just now',
+                source: url.replace('https://', '').split('/')[0]
+            });
+            closeModal('feed-modal');
+            renderFeeds();
+            showToast(`Feed "${name}" added successfully.`, 'success');
+        }
+
+        /* ═══════════════════════════════════════
+           IOC RENDER
+        ═══════════════════════════════════════ */
+        function renderIOCs(filtered) {
+            const data = filtered || State.iocs;
+            document.getElementById('ioc-count').textContent = `Showing ${data.length} of 12,843`;
+            document.getElementById('ioc-table-body').innerHTML = data.map(ioc => `
+    <tr>
+      <td class="text-cyan">${ioc.value}</td>
+      <td><span class="tag">${ioc.type}</span></td>
+      <td><span class="badge badge-${ioc.severity.toLowerCase()}">${ioc.severity}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="progress-bar" style="width:60px;margin:0;"><div class="progress-fill" style="width:${ioc.confidence}%;background:var(--accent-cyan);"></div></div>
+          <span style="font-size:10px;color:var(--text-muted);">${ioc.confidence}%</span>
+        </div>
+      </td>
+      <td class="text-muted">${ioc.firstSeen}</td>
+      <td class="text-muted">${ioc.lastSeen}</td>
+      <td class="text-muted">${ioc.source}</td>
+      <td>${ioc.tags.map(t => `<span class="tag cyan">${t}</span>`).join('')}</td>
+    </tr>
+  `).join('');
+}
+
+function filterIOCs() {
+  const typeF = document.getElementById('ioc-filter-type').value;
+  const sevF = document.getElementById('ioc-filter-sev').value;
+  const filtered = State.iocs.filter(i =>
+    (!typeF || i.type === typeF) && (!sevF || i.severity === sevF)
+  );
+  renderIOCs(filtered);
+}
+
+/* ═══════════════════════════════════════
+   ALERTS RENDER
+═══════════════════════════════════════ */
+function renderAlerts() {
+  const unread = State.alerts.filter(a => a.unread).length;
+  document.getElementById('notif-count').textContent = unread;
+  document.getElementById('notif-count').style.display = unread ? 'flex' : 'none';
+
+  document.getElementById('alerts-panel').innerHTML = State.alerts.map(a => `
+    <div class="alert-item ${a.unread ? 'unread' : ''}" onclick="markAlertRead(${a.id})">
+      <div class="alert-icon">${a.icon}</div>
+      <div class="alert-content">
+        <div class="alert-title">${a.title} ${a.unread ? '<span style="width:6px;height:6px;border-radius:50%;background:var(--accent-cyan);display:inline-block;margin-left:4px;"></span>' : ''}</div>
+        <div class="alert-body">${a.body}</div>
+        <div class="alert-time">${a.time}</div>
+      </div>
+      <div><span class="badge badge-${a.severity}">${a.severity}</span></div>
+    </div>
+  `).join('');
+}
+
+function markAlertRead(id) {
+  const a = State.alerts.find(x => x.id === id);
+  if (a) { a.unread = false; renderAlerts(); }
+}
+
+function markAllRead() {
+  State.alerts.forEach(a => a.unread = false);
+  renderAlerts();
+  showToast('All alerts marked as read.', 'success');
+}
+
+/* ═══════════════════════════════════════
+   REPORTS RENDER
+═══════════════════════════════════════ */
+function renderReports() {
+  const reports = [
+    { title: 'Weekly Threat Intelligence Report — W9 2025', date: 'Mar 03, 2025', type: 'Weekly', iocs: 1842 },
+    { title: 'LockBit 4.0 Campaign Analysis', date: 'Mar 01, 2025', type: 'Campaign', iocs: 284 },
+    { title: 'APT29 Infrastructure Report Q1 2025', date: 'Feb 28, 2025', type: 'Actor', iocs: 94 },
+    { title: 'Daily Digest — Feb 27, 2025', date: 'Feb 27, 2025', type: 'Daily', iocs: 342 },
+    { title: 'CVE Exploitation Trends — Feb 2025', date: 'Feb 25, 2025', type: 'Monthly', iocs: 67 }
+  ];
+  document.getElementById('reports-list').innerHTML = reports.map(r => `
+    <div style="padding:12px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''">
+      <div style="font-size:12px;color:var(--text-primary);margin-bottom:4px;">${r.title}</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="badge badge-info">${r.type}</span>
+        <span style="font-size:10px;color:var(--text-muted);">${r.date}</span>
+        <span style="font-size:10px;color:var(--text-muted);margin-left:auto;">${r.iocs} IOCs</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function generateReport() {
+  showToast('Generating report... This may take a moment.', 'info');
+  setTimeout(() => {
+    showToast('Report generated successfully.', 'success');
+    renderReports();
+  }, 2000);
+}
+
+/* ═══════════════════════════════════════
+   ACTORS RENDER
+═══════════════════════════════════════ */
+function renderActors() {
+  document.getElementById('actors-grid').innerHTML = State.actors.map(a => `
+    <div class="panel" style="cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor='${a.color}'" onmouseout="this.style.borderColor='var(--border)'">
+      <div class="panel-header">
+        <span style="font-size:13px;font-weight:700;color:${a.color};">${a.name}</span>
+        <span class="badge badge-${a.activity === 'High' || a.activity === 'Very High' ? 'high' : a.activity === 'Medium' ? 'medium' : 'low'}">${a.activity}</span>
+      </div>
+      <div class="panel-body">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Origin: <span style="color:var(--text-secondary);">${a.origin}</span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Targets: <span style="color:var(--text-secondary);">${a.targets}</span></div>
+        <div style="margin-bottom:12px;">${a.ttps.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+        <div style="font-size:11px;color:var(--text-muted);">Known IOCs: <span style="color:${a.color};font-weight:700;">${a.iocs}</span></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ═══════════════════════════════════════
+   THREAT HUNT
+═══════════════════════════════════════ */
+function runHuntQuery() {
+  const q = document.getElementById('hunt-query').value.trim();
+  if (!q) { showToast('Enter a search query.', 'warning'); return; }
+
+  const resultsDiv = document.getElementById('hunt-results');
+  resultsDiv.innerHTML = `<div class="panel-header"><span class="panel-title">Hunt Results — <span class="text-cyan">"${q}"</span></span></div><div class="panel-body"><div class="spinner"></div> Searching intelligence feeds...</div>`;
+
+  setTimeout(() => {
+    const matchedIOCs = State.iocs.filter(i => i.value.toLowerCase().includes(q.toLowerCase()) || i.tags.some(t => t.includes(q.toLowerCase()))).slice(0, 10);
+    const matchedActor = State.actors.find(a => a.name.toLowerCase().includes(q.toLowerCase()));
+
+    let html = `<div class="panel-header"><span class="panel-title">Hunt Results — <span class="text-cyan">"${q}"</span></span><span class="badge badge-info">${matchedIOCs.length} matches</span></div>`;
+
+    if (matchedActor) {
+      html += `<div style="padding:14px 18px;background:var(--accent-cyan-dim);border-bottom:1px solid var(--border);">
+        <div style="font-size:12px;font-weight:700;color:var(--accent-cyan);">🎯 Threat Actor Match: ${matchedActor.name}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Origin: ${matchedActor.origin} · Activity: ${matchedActor.activity} · ${matchedActor.iocs} known IOCs</div>
+      </div>`;
+    }
+
+    if (matchedIOCs.length > 0) {
+      html += `<table class="threat-table"><thead><tr><th>Value</th><th>Type</th><th>Severity</th><th>Source</th><th>Tags</th></tr></thead><tbody>`;
+      html += matchedIOCs.map(i => `<tr>
+        <td class="text-cyan">${i.value}</td>
+        <td><span class="tag">${i.type}</span></td>
+        <td><span class="badge badge-${i.severity.toLowerCase()}">${i.severity}</span></td>
+        <td class="text-muted">${i.source}</td>
+        <td>${i.tags.map(t => `<span class="tag cyan">${t}</span>`).join('')}</td>
+      </tr>`).join('');
+      html += '</tbody></table>';
+    } else if (!matchedActor) {
+      html += `<div class="panel-body" style="color:var(--text-muted);">No matches found for "<span class="text-cyan">${q}</span>" in current threat intelligence database.</div>`;
+    }
+
+    resultsDiv.innerHTML = html;
+  }, 1200);
+}
+
+/* ═══════════════════════════════════════
+   USER MANAGEMENT
+═══════════════════════════════════════ */
+function renderUsers() {
+  const colors = ['avatar-cyan', 'avatar-purple', 'avatar-orange'];
+  document.getElementById('users-grid').innerHTML = State.users.map((u, i) => `
+    <div class="user-card">
+      <div class="user-card-top">
+        <div class="user-card-avatar ${colors[i % colors.length]}" style="width:46px;height:46px;">${u.name[0]}</div>
+        <div>
+          <div class="user-card-name">${u.name}</div>
+          <div class="user-card-email">${u.email}</div>
+          <div class="user-card-role">${u.role}</div>
+        </div>
+        <div style="margin-left:auto;">
+          <span class="badge ${u.active ? 'badge-low' : 'badge-critical'}">${u.active ? 'ACTIVE' : 'INACTIVE'}</span>
+        </div>
+      </div>
+      <div class="user-card-meta">
+        <span>📋 ${u.reports} reports</span>
+        <span>🔍 ${u.iocs} IOCs</span>
+        <span>📅 Since ${u.since}</span>
+      </div>
+      <div class="user-card-actions">
+        <button class="btn btn-ghost btn-xs" onclick="editUser(${u.id})">✏ Edit</button>
+        <button class="btn btn-ghost btn-xs" onclick="toggleUserStatus(${u.id})">${u.active ? '⏸ Deactivate' : '▶ Activate'}</button>
+        ${u.id !== 1 ? `<button class="btn btn-danger btn-xs" onclick="deleteUser(${u.id})">✕ Delete</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function openAddUserModal() {
+  document.getElementById('user-modal-title').textContent = 'Add New User';
+  document.getElementById('edit-user-id').value = '';
+  ['modal-name','modal-email','modal-username','modal-password'].forEach(id => document.getElementById(id).value = '');
+  openModal('user-modal');
+}
+
+function editUser(id) {
+  const u = State.users.find(x => x.id === id);
+  if (!u) return;
+  document.getElementById('user-modal-title').textContent = 'Edit User';
+  document.getElementById('edit-user-id').value = id;
+  document.getElementById('modal-name').value = u.name;
+  document.getElementById('modal-email').value = u.email;
+  document.getElementById('modal-username').value = u.username;
+  document.getElementById('modal-password').value = '';
+  document.getElementById('modal-role').value = u.role;
+  document.getElementById('modal-tlp').value = u.tlp;
+  openModal('user-modal');
+}
+
+function saveUser() {
+  const id = document.getElementById('edit-user-id').value;
+  const name = document.getElementById('modal-name').value.trim();
+  const email = document.getElementById('modal-email').value.trim();
+  const username = document.getElementById('modal-username').value.trim();
+  const password = document.getElementById('modal-password').value;
+  const role = document.getElementById('modal-role').value;
+  const tlp = document.getElementById('modal-tlp').value;
+
+  if (!name || !email || !username) { showToast('Name, email and username are required.', 'error'); return; }
+
+  if (id) {
+    const u = State.users.find(x => x.id === parseInt(id));
+    if (u) { u.name = name; u.email = email; u.username = username; u.role = role; u.tlp = tlp; if (password) u.password = password; }
+    showToast('User updated.', 'success');
+  } else {
+    if (State.users.find(u => u.username === username)) { showToast('Username taken.', 'error'); return; }
+    State.users.push({ id: State.nextUserId++, name, username, email, password: password || 'change123', role, tlp, since: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), active: true, reports: 0, iocs: 0, feeds: 0, days: 0 });
+    showToast(`User "${name}" created.`, 'success');
+  }
+
+  closeModal('user-modal');
+  renderUsers();
+}
+
+function toggleUserStatus(id) {
+  const u = State.users.find(x => x.id === id);
+  if (!u) return;
+  u.active = !u.active;
+  renderUsers();
+  showToast(`${u.name} is now ${u.active ? 'active' : 'inactive'}.`, u.active ? 'success' : 'warning');
+}
+
+function deleteUser(id) {
+  const u = State.users.find(x => x.id === id);
+  if (!u) return;
+  State.users = State.users.filter(x => x.id !== id);
+  renderUsers();
+  showToast(`User "${u.name}" deleted.`, 'info');
+}
+
+/* ═══════════════════════════════════════
+   PROFILE
+═══════════════════════════════════════ */
+function updateProfileView() {
+  const u = State.currentUser;
+  if (!u) return;
+
+  document.getElementById('profile-avatar-large').textContent = u.name[0];
+  document.getElementById('profile-name').textContent = u.name;
+  document.getElementById('profile-title').textContent = (u.role + ' — THREAT INTELLIGENCE').toUpperCase();
+  document.getElementById('profile-badges').innerHTML = `<span class="badge badge-info">${u.role}</span> <span class="badge badge-new">${u.tlp}</span>`;
+
+  document.getElementById('ps-reports').textContent = u.reports;
+  document.getElementById('ps-iocs').textContent = u.iocs.toLocaleString();
+  document.getElementById('ps-feeds').textContent = u.feeds;
+  document.getElementById('ps-days').textContent = u.days;
+
+  document.getElementById('pf-name').textContent = u.name;
+  document.getElementById('pf-username').textContent = u.username;
+  document.getElementById('pf-email').textContent = u.email;
+  document.getElementById('pf-role').textContent = u.role;
+  document.getElementById('pf-tlp').textContent = u.tlp;
+  document.getElementById('pf-since').textContent = u.since;
+
+  renderProfileActivity();
+  renderAPIKeys();
+}
+
+function renderProfileActivity() {
+  const activities = [
+    { text: 'Synced <strong>Abuse.ch</strong> feed', time: '2m ago', icon: '📡' },
+    { text: 'Added <strong>47 IOCs</strong> to watchlist', time: '1h ago', icon: '🔍' },
+    { text: 'Generated <strong>Weekly Report</strong>', time: '1d ago', icon: '📋' },
+    { text: 'Updated <strong>APT29 actor profile</strong>', time: '2d ago', icon: '👤' },
+    { text: 'Created alert rule for <strong>CVE-2024-12356</strong>', time: '3d ago', icon: '🚨' }
+  ];
+  document.getElementById('profile-activity').innerHTML = activities.map(a =>
+    `<div class="feed-item"><span style="font-size:16px;">${a.icon}</span><span style="font-size:11px;color:var(--text-secondary);flex:1;">${a.text}</span><span style="font-size:10px;color:var(--text-dim);">${a.time}</span></div>`
+  ).join('');
+}
+
+function renderAPIKeys() {
+  document.getElementById('api-keys-list').innerHTML = State.apiKeys.map(k => `
+    <div class="feed-item">
+      <div style="flex:1;">
+        <div style="font-size:12px;color:var(--text-primary);font-weight:600;">${k.name}</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;font-family:var(--font-mono);">${k.key}</div>
+        <div style="font-size:9px;color:var(--text-dim);margin-top:2px;">Created ${k.created} · Last used ${k.lastUsed}</div>
+      </div>
+      <div class="flex gap-8">
+        <button class="btn btn-ghost btn-xs" onclick="copyToClipboard('${k.key}')">📋 Copy</button>
+        <button class="btn btn-danger btn-xs" onclick="revokeKey('${k.id}')">✕ Revoke</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openEditProfileModal() {
+  const u = State.currentUser;
+  document.getElementById('edit-fullname').value = u.name;
+  document.getElementById('edit-email').value = u.email;
+  document.getElementById('edit-title').value = u.role + ' Analyst';
+  openModal('profile-modal');
+}
+
+function saveProfile() {
+  const u = State.currentUser;
+  const name = document.getElementById('edit-fullname').value.trim();
+  const email = document.getElementById('edit-email').value.trim();
+  if (!name || !email) { showToast('Name and email are required.', 'error'); return; }
+  u.name = name;
+  u.email = email;
+  closeModal('profile-modal');
+  updateProfileView();
+  document.getElementById('sidebar-username').textContent = name;
+  document.getElementById('sidebar-avatar').textContent = name[0].toUpperCase();
+  showToast('Profile updated.', 'success');
+}
+
+function generateAPIKey() {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const key = 'tp_live_' + Array.from({ length: 24 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  State.apiKeys.push({ id: 'key_' + Date.now(), name: 'New API Key ' + (State.apiKeys.length + 1), key: key.slice(0,12) + '••••••••••••', created: new Date().toISOString().slice(0, 10), lastUsed: 'Never' });
+  renderAPIKeys();
+  showToast('New API key generated.', 'success');
+}
+
+function revokeKey(id) {
+  State.apiKeys = State.apiKeys.filter(k => k.id !== id);
+  renderAPIKeys();
+  showToast('API key revoked.', 'warning');
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard && navigator.clipboard.writeText(text);
+  showToast('Copied to clipboard.', 'info');
+}
+
+/* ═══════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════ */
+function switchSettingsTab(el, tabId) {
+  document.querySelectorAll('.settings-nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.settings-tab').forEach(t => t.style.display = 'none');
+  document.getElementById(tabId).style.display = 'block';
+}
+
+function toggleSwitch(el) {
+  el.classList.toggle('on');
+}
+
+function saveSettings(section) {
+  showToast(`${section.charAt(0).toUpperCase() + section.slice(1)} settings saved.`, 'success');
+}
+
+function changePassword() {
+  const cur = document.getElementById('pw-current').value;
+  const nw = document.getElementById('pw-new').value;
+  const conf = document.getElementById('pw-confirm').value;
+
+  if (!cur || !nw || !conf) { showToast('All password fields are required.', 'error'); return; }
+  if (cur !== State.currentUser.password) { showToast('Current password is incorrect.', 'error'); return; }
+  if (nw !== conf) { showToast('New passwords do not match.', 'error'); return; }
+  if (nw.length < 6) { showToast('Password must be at least 6 characters.', 'error'); return; }
+
+  State.currentUser.password = nw;
+  const userRecord = State.users.find(u => u.id === State.currentUser.id);
+  if (userRecord) userRecord.password = nw;
+
+  ['pw-current','pw-new','pw-confirm'].forEach(id => document.getElementById(id).value = '');
+  showToast('Password changed successfully.', 'success');
+}
+
+function changeTheme(theme) {
+  const themes = {
+    cyan: '#00d4ff',
+    green: '#00ff88',
+    orange: '#ff7c2a',
+    purple: '#9b5de5'
+  };
+  document.documentElement.style.setProperty('--accent-cyan', themes[theme] || themes.cyan);
+  showToast(`Theme changed to ${theme}.`, 'info');
+}
+
+/* ═══════════════════════════════════════
+   GLOBAL SEARCH
+═══════════════════════════════════════ */
+function globalSearch(q) {
+  if (!q || q.length < 3) return;
+  const results = State.iocs.filter(i => i.value.toLowerCase().includes(q.toLowerCase())).length;
+  if (results > 0) showToast(`Found ${results} IOCs matching "${q}" — press Enter to view in IOC Explorer`, 'info');
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && document.activeElement.id === 'global-search') {
+    document.getElementById('hunt-query').value = document.getElementById('global-search').value;
+    switchView('hunt');
+    runHuntQuery();
+  }
+  if (e.key === 'Enter' && document.activeElement.id === 'login-username' || e.key === 'Enter' && document.activeElement.id === 'login-password') {
+    handleLogin();
+  }
+});
+
+/* ═══════════════════════════════════════
+   MODAL HELPERS
+═══════════════════════════════════════ */
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => {
+    if (e.target === o) o.classList.remove('show');
+  });
+});
+
+/* ═══════════════════════════════════════
+   TOAST NOTIFICATIONS
+═══════════════════════════════════════ */
+function showToast(msg, type = 'info') {
+  const map = { success: 'toast-success', error: 'toast-error', warning: 'toast-warning', info: '' };
+  const toast = document.createElement('div');
+  toast.className = `toast ${map[type] || ''}`;
+  toast.textContent = msg;
+  document.getElementById('toast-container').appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
+}
+
+/* ═══════════════════════════════════════
+   LIVE STATS UPDATER
+═══════════════════════════════════════ */
+function liveUpdate() {
+  if (!State.currentUser) return;
+  // Randomly increment IOC count
+  const statIocs = document.getElementById('stat-iocs');
+  if (statIocs) {
+    const cur = parseInt(statIocs.textContent.replace(/,/g, ''));
+    if (Math.random() > 0.7) statIocs.textContent = (cur + Math.floor(Math.random() * 3) + 1).toLocaleString();
+  }
+}
+
+setInterval(liveUpdate, 5000);
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+seedData();
+    </script>
+</body>
+
+</html>
