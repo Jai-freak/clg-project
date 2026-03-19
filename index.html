@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThreatPulse — Threat Intelligence Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <!-- ═══════════════════════════════════════
+     LOGIN PAGE
+═══════════════════════════════════════ -->
+    <div class="page active" id="login-page">
+        <div class="login-grid-bg"></div>
+        <div class="login-glow"></div>
+        <div class="login-scan-line"></div>
+
+        <div class="login-container">
+            <div class="login-logo">
+                <span class="logo-icon">🛡</span>
+                <h1>ThreatPulse</h1>
+                <p>Threat Intelligence Aggregation Platform</p>
+            </div>
+            <div class="login-alert" id="login-error">⚠ Invalid credentials. Please try again.</div>
+            <div class="form-group">
+                <label>Access Identifier</label>
+                <input type="text" id="login-username" placeholder="username or email" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Authentication Key</label>
+                <input type="password" id="login-password" placeholder="••••••••••">
+            </div>
+            <div class="flex-between mb-16" style="font-size:10px;">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--text-muted);">
+        <input type="checkbox" id="remember-me" style="width:auto;margin:0;">
+        Remember session
+      </label>
+                <a style="color:var(--accent-cyan);cursor:pointer;" onclick="showToast('Password reset link sent to registered email.','info')">Forgot password?</a>
+            </div>
+            <button class="btn btn-primary" onclick="handleLogin()">
+      <span>⚡</span> Authenticate
+    </button>
+            <div class="login-footer">
+                No account? <a onclick="showPage('register-page')">Request Access</a>
+            </div>
+        </div>
+
+        <div class="login-demo-creds">
+            Demo: <span>admin</span> / <span>admin123</span> &nbsp;•&nbsp; <span>analyst</span> / <span>analyst123</span> &nbsp;•&nbsp; <span>viewer</span> / <span>viewer123</span>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+     REGISTER PAGE
+═══════════════════════════════════════ -->
+    <div class="page" id="register-page">
+        <div class="login-grid-bg"></div>
+        <div class="login-glow"></div>
+        <div class="login-scan-line"></div>
+
+        <div class="login-container" style="width:500px;max-width:95vw;">
+            <div class="login-logo">
+                <span class="logo-icon">🛡</span>
+                <h1>ThreatPulse</h1>
+                <p>Create Analyst Account</p>
+            </div>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="reg-name" placeholder="Jane Doe">
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="reg-email" placeholder="analyst@org.com">
+            </div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="reg-username" placeholder="j.doe">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="reg-password" placeholder="••••••••••">
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <select id="reg-role">
+        <option value="Analyst">Analyst</option>
+        <option value="Viewer">Viewer</option>
+        <option value="Admin">Admin</option>
+      </select>
+            </div>
+            <button class="btn btn-primary" onclick="handleRegister()">
+      <span>✓</span> Create Account
+    </button>
+            <div class="login-footer">
+                Already have access? <a onclick="showPage('login-page')">Sign in</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+     MAIN APP PAGE
+═══════════════════════════════════════ -->
+    <div class="page" id="app-page">
+
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <div class="brand">THREATPULSE</div>
+                <span class="brand-sub">v3.1.0 — LIVE</span>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-label">Core</div>
+                <div class="nav-item active" onclick="switchView('dashboard')">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" onclick="switchView('feeds')">
+                    <span class="nav-icon">📡</span>
+                    <span>Threat Feeds</span>
+                    <span class="nav-badge">12</span>
+                </div>
+                <div class="nav-item" onclick="switchView('iocs')">
+                    <span class="nav-icon">🔍</span>
+                    <span>IOC Explorer</span>
+                </div>
+                <div class="nav-item" onclick="switchView('alerts')">
+                    <span class="nav-icon">🚨</span>
+                    <span>Alerts</span>
+                    <span class="nav-badge">5</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-label">Intelligence</div>
+                <div class="nav-item" onclick="switchView('reports')">
+                    <span class="nav-icon">📋</span>
+                    <span>Reports</span>
+                </div>
+                <div class="nav-item" onclick="switchView('actors')">
+                    <span class="nav-icon">👤</span>
+                    <span>Threat Actors</span>
+                </div>
+                <div class="nav-item" onclick="switchView('hunt')">
+                    <span class="nav-icon">🎯</span>
+                    <span>Threat Hunt</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section" id="admin-nav" style="display:none;">
+                <div class="sidebar-section-label">Admin</div>
+                <div class="nav-item" onclick="switchView('users')">
+                    <span class="nav-icon">👥</span>
+                    <span>Users</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-label">Account</div>
+                <div class="nav-item" onclick="switchView('profile')">
+                    <span class="nav-icon">🧑</span>
+                    <span>My Profile</span>
+                </div>
+                <div class="nav-item" onclick="switchView('settings')">
+                    <span class="nav-icon">⚙</span>
+                    <span>Settings</span>
+                </div>
+            </div>
+
+            <div class="sidebar-bottom">
+                <div class="sidebar-user" onclick="switchView('profile')">
+                    <div class="avatar avatar-cyan" id="sidebar-avatar">A</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name" id="sidebar-username">Admin</div>
+                        <div class="sidebar-user-role" id="sidebar-role">ADMINISTRATOR</div>
+                    </div>
+                </div>
+                <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px;justify-content:center;" onclick="handleLogout()">
+        ⏏ Logout
+      </button>
+            </div>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+
+            <!-- TOP BAR -->
+            <div class="topbar">
+                <div class="topbar-title" id="topbar-title">Dashboard</div>
+                <div class="topbar-search">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" placeholder="Search threats, IOCs, IPs..." id="global-search" oninput="globalSearch(this.value)">
+                </div>
+                <div class="topbar-right">
+                    <div class="status-dot"></div>
+                    <div class="topbar-time" id="topbar-clock">00:00:00 UTC</div>
+                    <div class="topbar-notif" onclick="switchView('alerts')">
+                        🔔
+                        <div class="notif-badge" id="notif-count">5</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ DASHBOARD VIEW ═══ -->
+            <div class="view active" id="view-dashboard">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Threat Intelligence <span>Dashboard</span></div>
+                        <div class="section-subtitle">Real-time aggregated threat intelligence — Last sync: <span id="last-sync">just now</span></div>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="refreshDashboard()">⟳ Refresh</button>
+                </div>
+
+                <!-- STAT CARDS -->
+                <div class="stats-grid">
+                    <div class="stat-card danger">
+                        <div class="stat-icon">🔴</div>
+                        <div class="stat-label">Critical Threats</div>
+                        <div class="stat-value" id="stat-critical">247</div>
+                        <div class="stat-change up">↑ 18 in last hour</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-icon">⚠</div>
+                        <div class="stat-label">Active IOCs</div>
+                        <div class="stat-value" id="stat-iocs">12,843</div>
+                        <div class="stat-change up">↑ 342 today</div>
+                    </div>
+                    <div class="stat-card info">
+                        <div class="stat-icon">📡</div>
+                        <div class="stat-label">Feed Sources</div>
+                        <div class="stat-value" id="stat-feeds">24</div>
+                        <div class="stat-change">21 active</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-icon">✓</div>
+                        <div class="stat-label">Blocked Threats</div>
+                        <div class="stat-value" id="stat-blocked">1,092</div>
+                        <div class="stat-change down">↓ Threat score: LOW</div>
+                    </div>
+                </div>
+
+                <!-- ROW 2 -->
+                <div class="grid-2-1">
+                    <!-- THREAT TABLE -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">⚠ Latest Threat Indicators</span>
+                            <button class="btn btn-ghost btn-xs" onclick="switchView('iocs')">View All</button>
+                        </div>
+                        <table class="threat-table" id="threat-table">
+                            <thead>
+                                <tr>
+                                    <th>Indicator</th>
+                                    <th>Type</th>
+                                    <th>Severity</th>
+                                    <th>Source</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="threat-table-body">
+                                <!-- populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- FEED STATUS -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">📡 Feed Status</span>
+                            <span class="badge badge-info">24 Total</span>
+                        </div>
+                        <div id="feed-status-list">
+                            <!-- populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROW 3 -->
+                <div class="grid-1-2">
+                    <!-- GEO ATTACKS -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">🌍 Attack Origins</span>
+                            <button class="btn btn-ghost btn-xs">Expand</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="geo-placeholder">
+                                <div class="geo-dots" id="geo-dots"></div>
+                                <div style="font-size:32px;opacity:0.4;">🗺</div>
+                                <div style="font-size:11px;color:var(--text-muted);">Real-time attack origin map</div>
+                                <div style="font-size:10px;color:var(--text-dim);">Connect GeoIP service to enable</div>
+                            </div>
+                            <div class="mt-8" id="geo-list">
+                                <!-- populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- THREAT VOLUME CHART + ACTIVITY -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">📈 24h Threat Volume</span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="mini-chart" id="threat-chart"></div>
+                            <div class="flex-between mt-8" style="font-size:9px;color:var(--text-muted);">
+                                <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>Now</span>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="panel-title mb-8" style="padding:0;">🕒 Activity Log</div>
+                            <div id="activity-log">
+                                <!-- populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROW 4 -->
+                <div class="grid-3">
+                    <!-- TOP MALWARE -->
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title">🦠 Top Malware Families</span></div>
+                        <div id="malware-list">
+                            <!-- populated by JS -->
+                        </div>
+                    </div>
+                    <!-- CVE TRACKER -->
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title">💥 Recent CVEs</span></div>
+                        <div id="cve-list">
+                            <!-- populated by JS -->
+                        </div>
+                    </div>
+                    <!-- THREAT ACTORS -->
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title">👤 Active Threat Actors</span></div>
+                        <div id="actor-list">
+                            <!-- populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ THREAT FEEDS VIEW ═══ -->
+            <div class="view" id="view-feeds">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Threat <span>Feeds</span></div>
+                        <div class="section-subtitle">24 integrated intelligence sources</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="openAddFeedModal()">+ Add Feed</button>
+                </div>
+                <div class="feed-grid" id="feeds-grid">
+                    <!-- populated by JS -->
+                </div>
+            </div>
+
+            <!-- ═══ IOC EXPLORER VIEW ═══ -->
+            <div class="view" id="view-iocs">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">IOC <span>Explorer</span></div>
+                        <div class="section-subtitle">Browse and search indicators of compromise</div>
+                    </div>
+                    <div class="flex gap-8">
+                        <select class="form-group" style="padding:7px 12px;background:var(--bg-input);border:1px solid var(--border);color:var(--text-secondary);font-family:var(--font-mono);font-size:11px;outline:none;" id="ioc-filter-type" onchange="filterIOCs()">
+            <option value="">All Types</option>
+            <option value="IP">IP Address</option>
+            <option value="Domain">Domain</option>
+            <option value="Hash">File Hash</option>
+            <option value="URL">URL</option>
+            <option value="Email">Email</option>
+          </select>
+                        <select style="padding:7px 12px;background:var(--bg-input);border:1px solid var(--border);color:var(--text-secondary);font-family:var(--font-mono);font-size:11px;outline:none;" id="ioc-filter-sev" onchange="filterIOCs()">
+            <option value="">All Severity</option>
+            <option value="Critical">Critical</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Indicators of Compromise</span>
+                        <span class="text-small text-muted" id="ioc-count">Showing 50 of 12,843</span>
+                    </div>
+                    <table class="threat-table">
+                        <thead>
+                            <tr>
+                                <th>Value</th>
+                                <th>Type</th>
+                                <th>Severity</th>
+                                <th>Confidence</th>
+                                <th>First Seen</th>
+                                <th>Last Seen</th>
+                                <th>Source</th>
+                                <th>Tags</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ioc-table-body">
+                            <!-- populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ═══ ALERTS VIEW ═══ -->
+            <div class="view" id="view-alerts">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Security <span>Alerts</span></div>
+                        <div class="section-subtitle">Active notifications and triggered rules</div>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="markAllRead()">✓ Mark All Read</button>
+                </div>
+                <div class="panel" id="alerts-panel">
+                    <!-- populated by JS -->
+                </div>
+            </div>
+
+            <!-- ═══ REPORTS VIEW ═══ -->
+            <div class="view" id="view-reports">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Intelligence <span>Reports</span></div>
+                        <div class="section-subtitle">Generated threat intelligence reports</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="generateReport()">⟳ Generate Report</button>
+                </div>
+                <div class="grid-2">
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title">📋 Recent Reports</span></div>
+                        <div id="reports-list">
+                            <!-- populated by JS -->
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title">📊 Report Summary</span></div>
+                        <div class="panel-body" id="report-summary">
+                            <div style="font-size:11px;color:var(--text-muted);margin-bottom:16px;">Select a report to view summary</div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Total Reports</div>
+                                </div>
+                                <div class="text-cyan">47</div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">This Week</div>
+                                </div>
+                                <div class="text-cyan">8</div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Auto-Generated</div>
+                                </div>
+                                <div class="text-cyan">31</div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Scheduled</div>
+                                </div>
+                                <div class="text-cyan">Daily, Weekly</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ THREAT ACTORS VIEW ═══ -->
+            <div class="view" id="view-actors">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Threat <span>Actors</span></div>
+                        <div class="section-subtitle">Known APT groups and adversary profiles</div>
+                    </div>
+                </div>
+                <div class="grid-3" id="actors-grid">
+                    <!-- populated by JS -->
+                </div>
+            </div>
+
+            <!-- ═══ THREAT HUNT VIEW ═══ -->
+            <div class="view" id="view-hunt">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Threat <span>Hunt</span></div>
+                        <div class="section-subtitle">Query and hunt for threat indicators</div>
+                    </div>
+                </div>
+                <div class="panel mb-16">
+                    <div class="panel-header"><span class="panel-title">🔎 Hunt Query</span></div>
+                    <div class="panel-body">
+                        <div class="form-group" style="margin-bottom:12px;">
+                            <label>Search Query (IP, Domain, Hash, CVE, Actor...)</label>
+                            <input type="text" id="hunt-query" placeholder="e.g. 185.220.101.0/24 or apt28 or CVE-2024-..." style="font-size:13px;">
+                        </div>
+                        <div class="flex gap-8">
+                            <button class="btn btn-primary" style="width:auto;" onclick="runHuntQuery()">⚡ Run Hunt</button>
+                            <button class="btn btn-ghost" onclick="document.getElementById('hunt-query').value=''">✕ Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel" id="hunt-results">
+                    <div class="panel-header"><span class="panel-title">Hunt Results</span></div>
+                    <div class="panel-body" style="color:var(--text-muted);font-size:11px;">Enter a query above to begin hunting...</div>
+                </div>
+            </div>
+
+            <!-- ═══ USERS VIEW (ADMIN) ═══ -->
+            <div class="view" id="view-users">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">User <span>Management</span></div>
+                        <div class="section-subtitle">Manage analyst accounts and permissions</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="openAddUserModal()">+ Add User</button>
+                </div>
+                <div class="users-grid" id="users-grid">
+                    <!-- populated by JS -->
+                </div>
+            </div>
+
+            <!-- ═══ PROFILE VIEW ═══ -->
+            <div class="view" id="view-profile">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">My <span>Profile</span></div>
+                        <div class="section-subtitle">Your analyst account information</div>
+                    </div>
+                </div>
+
+                <div class="profile-hero">
+                    <div class="profile-top">
+                        <div class="profile-avatar-large" id="profile-avatar-large">A</div>
+                        <div>
+                            <div class="profile-name" id="profile-name">Admin User</div>
+                            <div class="profile-title" id="profile-title">PLATFORM ADMINISTRATOR</div>
+                            <div style="margin-top:8px;" id="profile-badges">
+                                <span class="badge badge-info">Admin</span>
+                                <span class="badge badge-new">TLP:AMBER</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="ps-reports">47</div>
+                            <div class="profile-stat-label">Reports</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="ps-iocs">1,204</div>
+                            <div class="profile-stat-label">IOCs Added</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="ps-feeds">8</div>
+                            <div class="profile-stat-label">Feeds Managed</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="ps-days">142</div>
+                            <div class="profile-stat-label">Days Active</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">Account Details</span>
+                            <button class="btn btn-ghost btn-xs" onclick="openEditProfileModal()">✏ Edit</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Full Name</div>
+                                </div>
+                                <div class="text-cyan" id="pf-name">Admin User</div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Username</div>
+                                </div>
+                                <div class="text-muted" id="pf-username">admin</div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Email</div>
+                                </div>
+                                <div class="text-muted" id="pf-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7d1c191014133d09150f181c090d08110e18531412">[email&#160;protected]</a></div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Role</div>
+                                </div>
+                                <div><span class="badge badge-info" id="pf-role">Admin</span></div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">TLP Clearance</div>
+                                </div>
+                                <div><span class="badge badge-new" id="pf-tlp">TLP:AMBER</span></div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Member Since</div>
+                                </div>
+                                <div class="text-muted" id="pf-since">Jan 15, 2024</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title">Recent Activity</span></div>
+                        <div id="profile-activity">
+                            <!-- populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">API Keys</span>
+                        <button class="btn btn-ghost btn-xs" onclick="generateAPIKey()">+ Generate Key</button>
+                    </div>
+                    <div id="api-keys-list">
+                        <!-- populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SETTINGS VIEW ═══ -->
+            <div class="view" id="view-settings">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Platform <span>Settings</span></div>
+                        <div class="section-subtitle">Configure your ThreatPulse environment</div>
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="settings-nav">
+                        <div class="settings-nav-item active" onclick="switchSettingsTab(this,'tab-general')">⚙ General</div>
+                        <div class="settings-nav-item" onclick="switchSettingsTab(this,'tab-notifications')">🔔 Notifications</div>
+                        <div class="settings-nav-item" onclick="switchSettingsTab(this,'tab-feeds')">📡 Feed Config</div>
+                        <div class="settings-nav-item" onclick="switchSettingsTab(this,'tab-security')">🔒 Security</div>
+                        <div class="settings-nav-item" onclick="switchSettingsTab(this,'tab-appearance')">🎨 Appearance</div>
+                        <div class="settings-nav-item" onclick="switchSettingsTab(this,'tab-integrations')">🔗 Integrations</div>
+                        <div class="settings-nav-item" onclick="switchSettingsTab(this,'tab-password')">🔑 Password</div>
+                    </div>
+
+                    <div class="settings-section">
+                        <!-- GENERAL TAB -->
+                        <div id="tab-general" class="settings-tab active-tab">
+                            <div class="settings-section-title">General Settings</div>
+                            <div class="settings-section-desc">Configure platform-wide defaults and behavior.</div>
+                            <div class="form-group"><label>Organization Name</label><input type="text" id="org-name" value="ACME Cyber Defense"></div>
+                            <div class="form-group"><label>Default TLP Level</label>
+                                <select id="default-tlp">
+                <option>TLP:WHITE</option>
+                <option selected>TLP:GREEN</option>
+                <option>TLP:AMBER</option>
+                <option>TLP:RED</option>
+              </select>
+                            </div>
+                            <div class="form-group"><label>Feed Refresh Interval (minutes)</label><input type="number" id="refresh-interval" value="15"></div>
+                            <div class="form-group"><label>Timezone</label>
+                                <select id="timezone"><option>UTC</option><option>US/Eastern</option><option>US/Pacific</option><option>Europe/London</option><option>Asia/Tokyo</option></select>
+                            </div>
+                            <button class="btn btn-primary" style="width:auto;" onclick="saveSettings('general')">💾 Save Changes</button>
+                        </div>
+
+                        <!-- NOTIFICATIONS TAB -->
+                        <div id="tab-notifications" class="settings-tab" style="display:none;">
+                            <div class="settings-section-title">Notification Settings</div>
+                            <div class="settings-section-desc">Choose which events trigger alerts.</div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Critical Threats</div>
+                                    <div class="setting-desc">Notify on critical severity IOCs</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)" id="notif-critical">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">New CVEs (CVSS ≥ 9.0)</div>
+                                    <div class="setting-desc">Critical vulnerability disclosures</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Feed Failures</div>
+                                    <div class="setting-desc">Notify when a feed goes offline</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">New Threat Actor Reports</div>
+                                    <div class="setting-desc">Alerts for new APT activity</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Daily Digest Email</div>
+                                    <div class="setting-desc">Summary email at 08:00 UTC</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Weekly Report</div>
+                                    <div class="setting-desc">Full analysis every Monday</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" style="width:auto;margin-top:16px;" onclick="saveSettings('notifications')">💾 Save</button>
+                        </div>
+
+                        <!-- FEED CONFIG TAB -->
+                        <div id="tab-feeds" class="settings-tab" style="display:none;">
+                            <div class="settings-section-title">Feed Configuration</div>
+                            <div class="settings-section-desc">API keys and endpoints for intelligence feeds.</div>
+                            <div class="form-group"><label>VirusTotal API Key</label><input type="password" value="••••••••••••••••••••••••" placeholder="Enter API key"></div>
+                            <div class="form-group"><label>Shodan API Key</label><input type="password" value="••••••••••••••••" placeholder="Enter API key"></div>
+                            <div class="form-group"><label>MISP Instance URL</label><input type="text" value="https://misp.internal" placeholder="https://misp.example.com"></div>
+                            <div class="form-group"><label>TAXII Server URL</label><input type="text" placeholder="https://taxii.example.com/taxii/"></div>
+                            <div class="form-group"><label>AlienVault OTX Key</label><input type="password" placeholder="Enter API key"></div>
+                            <button class="btn btn-primary" style="width:auto;" onclick="saveSettings('feeds')">💾 Save Keys</button>
+                        </div>
+
+                        <!-- SECURITY TAB -->
+                        <div id="tab-security" class="settings-tab" style="display:none;">
+                            <div class="settings-section-title">Security Settings</div>
+                            <div class="settings-section-desc">Authentication and session security options.</div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Two-Factor Authentication</div>
+                                    <div class="setting-desc">TOTP via authenticator app</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Session Timeout</div>
+                                    <div class="setting-desc">Auto logout after inactivity</div>
+                                </div>
+                                <select style="padding:6px 10px;background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);font-family:var(--font-mono);font-size:11px;outline:none;">
+                <option>30 minutes</option>
+                <option selected>1 hour</option>
+                <option>4 hours</option>
+                <option>8 hours</option>
+              </select>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">IP Allowlist</div>
+                                    <div class="setting-desc">Restrict logins to specific IPs</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Audit Logging</div>
+                                    <div class="setting-desc">Log all user actions</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">SSO / SAML</div>
+                                    <div class="setting-desc">Enterprise single sign-on</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- APPEARANCE TAB -->
+                        <div id="tab-appearance" class="settings-tab" style="display:none;">
+                            <div class="settings-section-title">Appearance</div>
+                            <div class="settings-section-desc">Customize the platform visual experience.</div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Color Theme</div>
+                                </div>
+                                <select style="padding:6px 10px;background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);font-family:var(--font-mono);font-size:11px;outline:none;" onchange="changeTheme(this.value)">
+                <option value="cyan" selected>Cyan (Default)</option>
+                <option value="green">Green Matrix</option>
+                <option value="orange">Amber Alert</option>
+                <option value="purple">Purple Haze</option>
+              </select>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Compact Mode</div>
+                                    <div class="setting-desc">Reduce spacing for more data</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Animations</div>
+                                    <div class="setting-desc">Enable UI motion effects</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Scan Line Effect</div>
+                                    <div class="setting-desc">Retro CRT scan line on login</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- INTEGRATIONS TAB -->
+                        <div id="tab-integrations" class="settings-tab" style="display:none;">
+                            <div class="settings-section-title">Integrations</div>
+                            <div class="settings-section-desc">Connect external tools and platforms.</div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Splunk SIEM</div>
+                                    <div class="setting-desc">HEC endpoint forwarding</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Elastic/OpenSearch</div>
+                                    <div class="setting-desc">IOC index synchronization</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Slack Alerts</div>
+                                    <div class="setting-desc">Post critical alerts to channel</div>
+                                </div>
+                                <div class="toggle on" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">PagerDuty</div>
+                                    <div class="setting-desc">Escalation for critical events</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div>
+                                    <div class="setting-label">Jira / ServiceNow</div>
+                                    <div class="setting-desc">Auto-create tickets for threats</div>
+                                </div>
+                                <div class="toggle" onclick="toggleSwitch(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top:16px;"><label>Webhook URL</label><input type="text" placeholder="https://hooks.example.com/..."></div>
+                            <button class="btn btn-primary" style="width:auto;" onclick="saveSettings('integrations')">💾 Save Integrations</button>
+                        </div>
+
+                        <!-- PASSWORD TAB -->
+                        <div id="tab-password" class="settings-tab" style="display:none;">
+                            <div class="settings-section-title">Change Password</div>
+                            <div class="settings-section-desc">Update your authentication credentials.</div>
+                            <div class="form-group"><label>Current Password</label><input type="password" id="pw-current" placeholder="••••••••••"></div>
+                            <div class="form-group"><label>New Password</label><input type="password" id="pw-new" placeholder="••••••••••"></div>
+                            <div class="form-group"><label>Confirm New Password</label><input type="password" id="pw-confirm" placeholder="••••••••••"></div>
+                            <button class="btn btn-primary" style="width:auto;" onclick="changePassword()">🔑 Update Password</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+     MODALS
+═══════════════════════════════════════ -->
+
+    <!-- Add/Edit User Modal -->
+    <div class="modal-overlay" id="user-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="user-modal-title">Add New User</div>
+                <div class="modal-close" onclick="closeModal('user-modal')">×</div>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-user-id">
+                <div class="form-group"><label>Full Name</label><input type="text" id="modal-name" placeholder="Jane Doe"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="modal-email" placeholder="jane@org.com"></div>
+                <div class="form-group"><label>Username</label><input type="text" id="modal-username" placeholder="j.doe"></div>
+                <div class="form-group"><label>Password</label><input type="password" id="modal-password" placeholder="••••••••••"></div>
+                <div class="form-group"><label>Role</label>
+                    <select id="modal-role">
+          <option value="Admin">Admin</option>
+          <option value="Analyst" selected>Analyst</option>
+          <option value="Viewer">Viewer</option>
+        </select>
+                </div>
+                <div class="form-group"><label>TLP Clearance</label>
+                    <select id="modal-tlp">
+          <option>TLP:WHITE</option>
+          <option>TLP:GREEN</option>
+          <option selected>TLP:AMBER</option>
+          <option>TLP:RED</option>
+        </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('user-modal')">Cancel</button>
+                <button class="btn btn-primary" style="width:auto;" onclick="saveUser()">💾 Save User</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal-overlay" id="profile-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Edit Profile</div>
+                <div class="modal-close" onclick="closeModal('profile-modal')">×</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group"><label>Full Name</label><input type="text" id="edit-fullname" placeholder="Full Name"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="edit-email" placeholder="email@org.com"></div>
+                <div class="form-group"><label>Job Title / Department</label><input type="text" id="edit-title" placeholder="Senior Threat Analyst"></div>
+                <div class="form-group"><label>Bio</label><textarea id="edit-bio" placeholder="Short description..." style="height:80px;resize:vertical;"></textarea></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('profile-modal')">Cancel</button>
+                <button class="btn btn-primary" style="width:auto;" onclick="saveProfile()">💾 Save Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Feed Modal -->
+    <div class="modal-overlay" id="feed-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Add Threat Feed</div>
+                <div class="modal-close" onclick="closeModal('feed-modal')">×</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group"><label>Feed Name</label><input type="text" id="new-feed-name" placeholder="e.g. My TAXII Feed"></div>
+                <div class="form-group"><label>Feed Type</label>
+                    <select id="new-feed-type">
+          <option>STIX/TAXII</option>
+          <option>MISP</option>
+          <option>CSV</option>
+          <option>JSON</option>
+          <option>RSS</option>
+          <option>API</option>
+        </select>
+                </div>
+                <div class="form-group"><label>URL / Endpoint</label><input type="text" id="new-feed-url" placeholder="https://feed.example.com/taxii/..."></div>
+                <div class="form-group"><label>API Key (if required)</label><input type="password" id="new-feed-key" placeholder="••••••••••••••••"></div>
+                <div class="form-group"><label>Refresh Interval (minutes)</label><input type="number" id="new-feed-interval" value="30"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('feed-modal')">Cancel</button>
+                <button class="btn btn-primary" style="width:auto;" onclick="addFeed()">+ Add Feed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- ═══════════════════════════════════════
+     JAVASCRIPT BACKEND
+═══════════════════════════════════════ -->
+
+    <script src="app.js"></script>
+</body>
+</html>
